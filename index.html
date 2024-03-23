@@ -76,6 +76,7 @@
   <button id="locateButton">Get my location</button>
   <script src="https://unpkg.com/leaflet@1.6.0/dist/leaflet.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-routing-machine/3.2.12/leaflet-routing-machine.js"></script>
   <script>
     const mapOptions = {
       zoomSnap: 0.5,
@@ -86,45 +87,7 @@
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
     }).addTo(map);
-    function getColor(name) {
-      switch (name) {
-        case "Al-Masyoun":
-          return "red";
-        case "Baten El-Hawa":
-          return "blue";
-        case "City Center":
-          return "Green";
-        case "Old City":
-          return "Orange";
-        case "Al-Wad":
-          return "Purple";
-        case "The Industrial Area":
-          return "Pink";
-        case "Al-Itha'a":
-          return "Gray";
-        case "Al-Tireh":
-          return "White";
-        default:
-          return "yellow";
-      }
-    }
-    var zoneLayer;
-    $.getJSON("RamallahZones.json", function (RZ) {
-      zoneLayer = L.geoJson(RZ, {
-        style: function (feature) {
-          return {
-            fillColor: getColor(feature.properties.NAME_ENGLI),
-            fillOpacity: 0.3,
-            color: "yellow",
-            weight: 1.0,
-            opacity: 0.7
-          };
-        },
-        onEachFeature: function (feature, layer) {
-          layer.bindPopup("Zone Name: " + feature.properties.NAME + "<br>Zone: " + feature.properties.NAME_ENGLI + "<br>MAIL_CODE: " + feature.properties.MAIL_CODE);
-        }
-      }).addTo(map);
-    });
+
     var pointLayer;
     $.getJSON("Libraries_P.json", function(WC) {
       pointLayer = L.geoJson(WC, {
@@ -143,6 +106,7 @@
         }
       }).addTo(map);
     });
+
     function searchPoint() {
       var searchValue = $('#searchInput').val();
       if (searchValue.trim() !== '') {
@@ -161,15 +125,18 @@
         alert("Please enter a value to search.");
       }
     }
+
     $('#searchInput').keypress(function(event){
       var keycode = (event.keyCode ? event.keyCode : event.which);
       if(keycode == '13'){
         searchPoint();
       }
     });
+
     $('#locateButton').click(function() {
       map.locate({setView: true, maxZoom: 16});
     });
+
     map.on('locationfound', function(e) {
       var myLocation = e.latlng;
       var nearestLibrary;
@@ -186,7 +153,10 @@
           L.latLng(myLocation.lat, myLocation.lng),
           nearestLibrary.getLatLng()
         ],
-        routeWhileDragging: true
+        routeWhileDragging: true,
+        lineOptions: {
+          styles: [{color: 'blue', opacity: 0.8, weight: 5}]
+        }
       }).addTo(map);
     });
   </script>
