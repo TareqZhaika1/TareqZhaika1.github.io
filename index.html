@@ -58,8 +58,10 @@
   <div id="map"></div>
   <input type="text" id="searchInput" placeholder="Search by ID" />
   <div id="searchNote">ID values are between 1 and 8.</div>
+  <button onclick="getCurrentLocation()">Get My Location</button>
   <script src="https://unpkg.com/leaflet@1.6.0/dist/leaflet.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.min.js"></script>
   <script>
     const mapOptions = {
       zoomSnap: 0.5,
@@ -125,10 +127,11 @@
           });
         },
         onEachFeature: function(feature, layer) {
-          layer.bindPopup("<br>ID: " + feature.properties.OBJECTID + "<br>Arabic Name: " + feature.properties.BUSNIESS_N + "<br>English Name: " + feature.properties.BUSNIESS_1 + "<br>X Coordination: " + feature.properties.X + "<br>Y Coordination: " + feature.properties.Y);
+          layer.bindPopup("<br>ID: " + feature.properties .OBJECTID + "<br>Arabic Name: " + feature.properties.BUSNIESS_N + "<br>English Name: " + feature.properties.BUSNIESS_1 + "<br>X Coordination: " + feature.properties.X + "<br>Y Coordination: " + feature.properties.Y);
         }
       }).addTo(map);
     });
+
     function searchPoint() {
       var searchValue = $('#searchInput').val();
       if (searchValue.trim() !== '') {
@@ -147,22 +150,43 @@
         alert("Please enter a value to search.");
       }
     }
+
     $('#searchInput').keypress(function(event){
       var keycode = (event.keyCode ? event.keyCode : event.which);
       if(keycode == '13'){
         searchPoint();
       }
     });
-    map.on('click', function(event) {
-      var layers = [pointLayer, zoneLayer];
-      layers.forEach(function(layer) {
-        layer.eachLayer(function(marker) {
-          if (map.getBounds().contains(event.latlng) && marker instanceof L.Marker && marker.isPopupOpen()) {
-            marker.closePopup();
-          }
+
+    function getCurrentLocation() {
+      if ("geolocation" in navigator) {
+        navigator.geolocation.getCurrentPosition(function(position) {
+          var userLocation = [position.coords.latitude, position.coords.longitude];
+          L.Routing.control({
+            waypoints: [
+              L.latLng(userLocation),
+              findNearestLibrary(userLocation)
+            ]
+          }).addTo(map);
         });
+      } else {
+        alert("Geolocation is not supported by your browser.");
+      }
+    }
+
+    function findNearestLibrary(userLocation) {
+      var nearestLibrary = null;
+      var minDistance = Infinity;
+      pointLayer.eachLayer(function(layer) {
+        var libraryLocation = layer.getLatLng();
+        var distance = userLocation.distanceTo(libraryLocation);
+        if (distance < minDistance) {
+          nearestLibrary = libraryLocation;
+          minDistance = distance;
+        }
       });
-    });
+      return nearestLibrary;
+    }
   </script>
 </body>
 </html>
