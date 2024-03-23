@@ -29,7 +29,7 @@
     #searchNote {
       position: absolute;
       color: red;
-      font-size: 14px;
+      font-size: 12px; /* Smaller font size for legend */
       z-index: 1000;
     }
     #locateButton {
@@ -41,6 +41,7 @@
     .leaflet-routing-container {
       background-color: red; /* Change the background color to red */
       color: white; /* Change the font color to white */
+      font-size: 12px; /* Smaller font size for route instructions */
     }
     @media (min-width: 769px) {
       #searchInput {
@@ -130,61 +131,60 @@
           };
         },
         onEachFeature: function (feature, layer) {
-        layer.bindPopup("Zone Name: " + feature.properties.NAME + "<br>Zone: " + feature.properties.NAME_ENGLI + "<br>MAIL_CODE: " + feature.properties.MAIL_CODE);
-      }
-    }).addTo(map);
-  });
-
-  var pointLayer;
-  $.getJSON("Libraries_P.json", function(WC) {
-    pointLayer = L.geoJson(WC, {
-      pointToLayer: function(feature, latlng) {
-        return L.circleMarker(latlng, {
-          radius: 5,
-          fillColor: "red",
-          color: "red",
-          weight: 1,
-          opacity: 1,
-          fillOpacity: 0.8
-        });
-      },
-      onEachFeature: function(feature, layer) {
-        layer.bindPopup("<br>ID: " + feature.properties.OBJECTID + "<br>Arabic Name: " + feature.properties.BUSNIESS_N + "<br>English Name: " + feature.properties.BUSNIESS_1 + "<br>X Coordination: " + feature.properties.X + "<br>Y Coordination: " + feature.properties.Y);
-      }
-    }).addTo(map);
-  });
-
-  $('#locateButton').click(function() {
-    map.locate({setView: true, maxZoom: 16});
-  });
-
-  map.on('locationfound', function(e) {
-    var myLocation = e.latlng;
-    var nearestLibrary;
-    var minDist = Infinity;
-    pointLayer.eachLayer(function(layer) {
-      var dist = myLocation.distanceTo(layer.getLatLng());
-      if (dist < minDist) {
-        minDist = dist;
-        nearestLibrary = layer;
-      }
+          layer.bindPopup("Zone Name: " + feature.properties.NAME + "<br>Zone: " + feature.properties.NAME_ENGLI + "<br>MAIL_CODE: " + feature.properties.MAIL_CODE);
+        }
+      }).addTo(map);
     });
-    if (window.routingControl) {
-      map.removeControl(window.routingControl);
-    }
 
-    window.routingControl = L.Routing.control({
-      waypoints: [
-        L.latLng(myLocation.lat, myLocation.lng),
-        nearestLibrary.getLatLng()
-      ],
-      routeWhileDragging: true,
-      lineOptions: {
-        styles: [{ color: 'red', opacity: 0.8, weight: 6 }]
+    var pointLayer;
+    $.getJSON("Libraries_P.json", function(WC) {
+      pointLayer = L.geoJson(WC, {
+        pointToLayer: function(feature, latlng) {
+          return L.circleMarker(latlng, {
+            radius: 5,
+            fillColor: "red",
+            color: "red",
+            weight: 1,
+            opacity: 1,
+            fillOpacity: 0.8
+          });
+        },
+        onEachFeature: function(feature, layer) {
+          layer.bindPopup("<br>ID: " + feature.properties.OBJECTID + "<br>Arabic Name: " + feature.properties.BUSNIESS_N + "<br>English Name: " + feature.properties.BUSNIESS_1 + "<br>X Coordination: " + feature.properties.X + "<br>Y Coordination: " + feature.properties.Y);
+        }
+      }).addTo(map);
+    });
+
+    $('#locateButton').click(function() {
+      map.locate({setView: true, maxZoom: 16});
+    });
+
+    map.on('locationfound', function(e) {
+      var myLocation = e.latlng;
+      var nearestLibrary;
+      var minDist = Infinity;
+      pointLayer.eachLayer(function(layer) {
+        var dist = myLocation.distanceTo(layer.getLatLng());
+        if (dist < minDist) {
+          minDist = dist;
+          nearestLibrary = layer;
+        }
+      });
+      if (window.routingControl) {
+        map.removeControl(window.routingControl);
       }
-    }).addTo(map);
-  });
-</script>
+
+      window.routingControl = L.Routing.control({
+        waypoints: [
+          L.latLng(myLocation.lat, myLocation.lng),
+          nearestLibrary.getLatLng()
+        ],
+        routeWhileDragging: true,
+        lineOptions: {
+          styles: [{ color: 'red', opacity: 0.8, weight: 6 }]
+        }
+      }).addTo(map);
+    });
+  </script>
 </body>
 </html>
-          
