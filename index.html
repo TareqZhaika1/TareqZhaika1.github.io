@@ -6,66 +6,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.6.0/dist/leaflet.css" />
   <style>
+    /* CSS styles */
     body {
       margin: 0;
       height: 100vh;
       width: 100%;
       position: relative;
-    }
-    #map {
-      position: absolute;
-      width: 100%;
-      top: 0;
-      bottom: 0;
-    }
-    #searchInput {
-      position: absolute;
-      top: 10px;
-      left: 20px;
-      z-index: 1000;
-      width: calc(100% - 100px);
-      max-width: 200px;
-    }
-    #searchNote {
-      position: absolute;
-      color: red;
-      font-size: 14px;
-      z-index: 1000;
-    }
-    #locateButton {
-      position: absolute;
-      top: 50px;
-      left: 20px;
-      z-index: 1000;
-    }
-    @media (min-width: 769px) {
-      #searchInput {
-        left: auto;
-        right: 20px;
-      }
-      #searchNote {
-        left: auto;
-        right: 20px;
-        top: 40px;
-      }
-      #locateButton {
-        left: auto;
-        right: 20px;
-        top: 80px;
-      }
-    }
-    @media (max-width: 768px) {
-      #searchInput {
-        left: 50px;
-      }
-      #searchNote {
-        top: 40px;
-        left: 20px;
-      }
-      #locateButton {
-        left: 50px;
-        top: 100px;
-      }
+      color: red; /* Set text color to red */
     }
   </style>
 </head>
@@ -159,7 +106,7 @@
           map.fitBounds(bounds.pad(0.2));
           foundLayers.forEach(layer => layer.openPopup());
         } else {
-          L.popup()
+                    L.popup()
             .setLatLng(map.getCenter())
             .setContent("Point not found with given OBJECTID.")
             .openOn(map);
@@ -191,6 +138,7 @@
           nearestLibrary = layer;
         }
       });
+
       if (window.routingControl) {
         map.removeControl(window.routingControl);
       }
@@ -236,4 +184,3 @@
   </script>
 </body>
 </html>
-
