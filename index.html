@@ -6,17 +6,66 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.6.0/dist/leaflet.css" />
   <style>
-    /* CSS styles */
     body {
       margin: 0;
       height: 100vh;
       width: 100%;
       position: relative;
-      color: red; /* Set text color to red */
     }
-    
     #map {
-      height: 100%;
+      position: absolute;
+      width: 100%;
+      top: 0;
+      bottom: 0;
+    }
+    #searchInput {
+      position: absolute;
+      top: 10px;
+      left: 20px;
+      z-index: 1000;
+      width: calc(100% - 100px);
+      max-width: 200px;
+    }
+    #searchNote {
+      position: absolute;
+      color: red;
+      font-size: 14px;
+      z-index: 1000;
+    }
+    #locateButton {
+      position: absolute;
+      top: 50px;
+      left: 20px;
+      z-index: 1000;
+    }
+    @media (min-width: 769px) {
+      #searchInput {
+        left: auto;
+        right: 20px;
+      }
+      #searchNote {
+        left: auto;
+        right: 20px;
+        top: 40px;
+      }
+      #locateButton {
+        left: auto;
+        right: 20px;
+        top: 80px;
+      }
+    }
+    @media (max-width: 768px) {
+      #searchInput {
+        left: 50px;
+      }
+      #searchNote {
+        top: 40px;
+        left: 20px;
+      }
+      #locateButton {
+        left: 50px;
+        top: 100px;
+      }
     }
   </style>
 </head>
@@ -29,25 +78,18 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-routing-machine/3.2.12/leaflet-routing-machine.js"></script>
   <script>
-    // Initialize Leaflet map
-    var map = L.map('map').setView([31.9045, 35.2045], 17.5);
-
-    // Add CartoDB dark basemap
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
-      subdomains: 'abcd',
-      maxZoom: 20
-    }).addTo(map);
-
-    // Your JavaScript code
     const mapOptions = {
       zoomSnap: 0.5,
       center: [31.9045, 35.2045],
       zoom: 17.5,
     };
     const map = L.map("map", mapOptions);
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+      subdomains: 'abcd',
+      maxZoom: 20
+    }).addTo(map);
 
-    // Function to get color based on name
     function getColor(name) {
       switch (name) {
         case "Al-Masyoun":
@@ -71,7 +113,6 @@
       }
     }
 
-    // Load GeoJSON data for zones
     var zoneLayer;
     $.getJSON("RamallahZones.json", function (RZ) {
       zoneLayer = L.geoJson(RZ, {
@@ -90,7 +131,6 @@
       }).addTo(map);
     });
 
-    // Load GeoJSON data for libraries
     var pointLayer;
     $.getJSON("Libraries_P.json", function(WC) {
       pointLayer = L.geoJson(WC, {
@@ -110,7 +150,6 @@
       }).addTo(map);
     });
 
-    // Function to search for a point
     function searchPoint() {
       var searchValue = $('#searchInput').val();
       if (searchValue.trim() !== '') {
@@ -130,7 +169,6 @@
       }
     }
 
-    // Event listener for search input
     $('#searchInput').keypress(function(event){
       var keycode = (event.keyCode ? event.keyCode : event.which);
       if(keycode == '13'){
@@ -138,12 +176,10 @@
       }
     });
 
-    // Event listener for locate button
     $('#locateButton').click(function() {
       map.locate({setView: true, maxZoom: 16});
     });
 
-    // Event listener for location found
     map.on('locationfound', function(e) {
       var myLocation = e.latlng;
       var nearestLibrary;
@@ -155,7 +191,6 @@
           nearestLibrary = layer;
         }
       });
-
       if (window.routingControl) {
         map.removeControl(window.routingControl);
       }
@@ -165,37 +200,7 @@
           L.latLng(myLocation.lat, myLocation.lng),
           nearestLibrary.getLatLng()
         ],
-        routeWhileDragging: true,
-        show: true, // Show the control immediately
-        lineOptions: {
-          styles: [{color: '#ff8e00', opacity: 0.7, weight: 5}]
-        },
-        createMarker: function(i, waypoint, n) {
-          if (i === 0) {
-            // Origin marker
-            return L.marker(waypoint.latLng, {
-              icon: L.divIcon({className: 'routing-icon routing-icon-origin', html: 'You are here'})
-            });
-          } else {
-            // Destination marker
-            return L.marker(waypoint.latLng, {
-               icon: L.divIcon({className: 'routing-icon routing-icon-destination', html: 'Nearest Library'})
-            });
-          }
-        },
-        formatter: new L.Routing.Formatter({
-          units: 'metric', // Use metric units
-          roundingSensitivity: 0.1, // Rounding sensitivity
-          language: 'en' // Language for instructions
-        }),
-        showAlternatives: false, // Hide alternative routes
-        routeWhileDragging: false, // Do not recalculate route while dragging
-        routeLine: function(route, options) {
-          var line = L.Routing.line(route, options);
-          line.addTo(map);
-          return line;
-        },
-        routeDragInterval: 0 // Recalculate route without delay
+        routeWhileDragging: true
       }).addTo(map);
     });
   </script>
