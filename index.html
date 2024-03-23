@@ -224,9 +224,16 @@
           language: 'en' // Language for instructions
         }),
         showAlternatives: false, // Hide alternative routes
-        routeWhileDragging: false // Do not recalculate route while dragging
+        routeWhileDragging: false, // Do not recalculate route while dragging
+        routeLine: function(route, options) {
+          var line = L.Routing.line(route, options);
+          line.addTo(map);
+          return line;
+        },
+        routeDragInterval: 0 // Recalculate route without delay
       }).addTo(map);
     });
   </script>
 </body>
 </html>
+
