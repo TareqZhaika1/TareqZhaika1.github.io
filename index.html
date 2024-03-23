@@ -83,10 +83,8 @@
       zoom: 17.5,
     };
     const map = L.map("map", mapOptions);
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
-      subdomains: 'abcd',
-      maxZoom: 20
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
     }).addTo(map);
     function getColor(name) {
       switch (name) {
@@ -169,18 +167,27 @@
         searchPoint();
       }
     });
-    map.on('click', function(event) {
-      var layers = [pointLayer, zoneLayer];
-      layers.forEach(function(layer) {
-        layer.eachLayer(function(marker) {
-          if (map.getBounds().contains(event.latlng) && marker instanceof L.Marker && marker.isPopupOpen()) {
-            marker.closePopup();
-          }
-        });
-      });
-    });
-    $('#locateButton').on('click', function() {
+    $('#locateButton').click(function() {
       map.locate({setView: true, maxZoom: 16});
+    });
+    map.on('locationfound', function(e) {
+      var myLocation = e.latlng;
+      var nearestLibrary;
+      var minDist = Infinity;
+      pointLayer.eachLayer(function(layer) {
+        var dist = myLocation.distanceTo(layer.getLatLng());
+        if (dist < minDist) {
+          minDist = dist;
+          nearestLibrary = layer;
+        }
+      });
+      L.Routing.control({
+        waypoints: [
+          L.latLng(myLocation.lat, myLocation.lng),
+          nearestLibrary.getLatLng()
+        ],
+        routeWhileDragging: true
+      }).addTo(map);
     });
   </script>
 </body>
