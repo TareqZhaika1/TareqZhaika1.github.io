@@ -39,6 +39,15 @@
       maxZoom: 20
     }).addTo(map);
 
+    // Your JavaScript code
+    const mapOptions = {
+      zoomSnap: 0.5,
+      center: [31.9045, 35.2045],
+      zoom: 17.5,
+    };
+    const map = L.map("map", mapOptions);
+
+    // Function to get color based on name
     function getColor(name) {
       switch (name) {
         case "Al-Masyoun":
@@ -62,6 +71,7 @@
       }
     }
 
+    // Load GeoJSON data for zones
     var zoneLayer;
     $.getJSON("RamallahZones.json", function (RZ) {
       zoneLayer = L.geoJson(RZ, {
@@ -80,6 +90,7 @@
       }).addTo(map);
     });
 
+    // Load GeoJSON data for libraries
     var pointLayer;
     $.getJSON("Libraries_P.json", function(WC) {
       pointLayer = L.geoJson(WC, {
@@ -99,6 +110,7 @@
       }).addTo(map);
     });
 
+    // Function to search for a point
     function searchPoint() {
       var searchValue = $('#searchInput').val();
       if (searchValue.trim() !== '') {
@@ -108,7 +120,7 @@
           map.fitBounds(bounds.pad(0.2));
           foundLayers.forEach(layer => layer.openPopup());
         } else {
-                    L.popup()
+          L.popup()
             .setLatLng(map.getCenter())
             .setContent("Point not found with given OBJECTID.")
             .openOn(map);
@@ -118,6 +130,7 @@
       }
     }
 
+    // Event listener for search input
     $('#searchInput').keypress(function(event){
       var keycode = (event.keyCode ? event.keyCode : event.which);
       if(keycode == '13'){
@@ -125,10 +138,12 @@
       }
     });
 
+    // Event listener for locate button
     $('#locateButton').click(function() {
       map.locate({setView: true, maxZoom: 16});
     });
 
+    // Event listener for location found
     map.on('locationfound', function(e) {
       var myLocation = e.latlng;
       var nearestLibrary;
@@ -164,7 +179,7 @@
           } else {
             // Destination marker
             return L.marker(waypoint.latLng, {
-              icon: L.divIcon({className: 'routing-icon routing-icon-destination', html: 'Nearest Library'})
+               icon: L.divIcon({className: 'routing-icon routing-icon-destination', html: 'Nearest Library'})
             });
           }
         },
