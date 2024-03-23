@@ -94,9 +94,9 @@
           return "yellow";
       }
     }
-    var wasteContainerLayer;
+    var zoneLayer;
     $.getJSON("RamallahZones.json", function (RZ) {
-      L.geoJson(RZ, {
+      zoneLayer = L.geoJson(RZ, {
         style: function (feature) {
           return {
             fillColor: getColor(feature.properties.NAME_ENGLI),
@@ -111,8 +111,9 @@
         }
       }).addTo(map);
     });
+    var pointLayer;
     $.getJSON("Libraries_P.json", function(WC) {
-      wasteContainerLayer = L.geoJson(WC, {
+      pointLayer = L.geoJson(WC, {
         pointToLayer: function(feature, latlng) {
           return L.circleMarker(latlng, {
             radius: 5,
@@ -131,7 +132,7 @@
     function searchPoint() {
       var searchValue = $('#searchInput').val();
       if (searchValue.trim() !== '') {
-        var foundLayers = wasteContainerLayer.getLayers().filter(layer => layer.feature.properties.OBJECTID === parseInt(searchValue));
+        var foundLayers = pointLayer.getLayers().filter(layer => layer.feature.properties.OBJECTID === parseInt(searchValue));
         if (foundLayers.length > 0) {
           var bounds = L.latLngBounds(foundLayers.map(layer => layer.getLatLng()));
           map.fitBounds(bounds.pad(0.2));
@@ -148,6 +149,16 @@
       if(keycode == '13'){
         searchPoint();
       }
+    });
+    map.on('click', function(event) {
+      var layers = [pointLayer, zoneLayer];
+      layers.forEach(function(layer) {
+        layer.eachLayer(function(marker) {
+          if (map.getBounds().contains(event.latlng) && marker instanceof L.Marker && marker.isPopupOpen()) {
+            marker.closePopup();
+          }
+        });
+      });
     });
   </script>
 </body>
