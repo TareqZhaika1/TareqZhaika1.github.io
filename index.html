@@ -138,7 +138,10 @@
           map.fitBounds(bounds.pad(0.2));
           foundLayers.forEach(layer => layer.openPopup());
         } else {
-          alert("Point not found with given OBJECTID.");
+          L.popup()
+            .setLatLng(map.getCenter())
+            .setContent("Point not found with given OBJECTID.")
+            .openOn(map);
         }
       } else {
         alert("Please enter a value to search.");
