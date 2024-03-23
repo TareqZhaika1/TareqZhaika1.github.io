@@ -3,29 +3,63 @@
 <head>
   <meta charset="utf-8" />
   <title>Ramallah</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.6.0/dist/leaflet.css" />
   <style>
-    /* Style the body */
     body {
       margin: 0;
       height: 100vh;
       width: 100%;
+      position: relative;
     }
-    /* Style the map */
     #map {
       position: absolute;
       width: 100%;
       top: 0;
       bottom: 0;
     }
+    #searchInput {
+      position: absolute;
+      top: 10px;
+      left: 20px;
+      z-index: 1000;
+      width: calc(100% - 100px);
+      max-width: 200px;
+    }
+    #searchNote {
+      position: absolute;
+      color: red;
+      font-size: 14px;
+      z-index: 1000;
+    }
+    @media (min-width: 769px) {
+      #searchInput {
+        left: auto;
+        right: 20px;
+      }
+      #searchNote {
+        left: auto;
+        right: 20px;
+        top: 40px; /* Adjusted */
+      }
+    }
+    @media (max-width: 768px) {
+      #searchInput {
+        left: 50px;
+      }
+      #searchNote {
+        top: 40px; /* Adjusted */
+        left: 70px; /* Adjusted */
+      }
+    }
   </style>
 </head>
 <body>
   <div id="map"></div>
+  <input type="text" id="searchInput" placeholder="Search by ID" />
+  <div id="searchNote">ID values are between 0 and 2348.</div>
   <script src="https://unpkg.com/leaflet@1.6.0/dist/leaflet.js"></script>
-<!-- Add a link to the jQuery JavaScript library so you can leverage ajax methods to load your data -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-
   <script>
     const mapOptions = {
       zoomSnap: 0.5,
@@ -33,13 +67,11 @@
       zoom: 17.5,
     };
     const map = L.map("map", mapOptions);
-    
-    // Add a base map to the map
     L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-  attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
-  subdomains: 'abcd',
-  maxZoom: 20
-}).addTo(map);
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+      subdomains: 'abcd',
+      maxZoom: 20
+    }).addTo(map);
     function getColor(name) {
       switch (name) {
         case "Al-Masyoun":
@@ -62,28 +94,10 @@
           return "yellow";
       }
     }
-
-    $.getJSON("RamallahZones.json", function(RZ) {
-      L.geoJson(RZ, {
-        style: function(feature) {
-          return {
-            fillColor: getColor(feature.properties.NAME_ENGLI),
-            fillOpacity: 0.3,
-            color: "yellow",
-            weight: 1.0,
-            opacity: 0.7
-          };
-         },
-        onEachFeature: function(feature, layer) {
-          layer.bindPopup("Zone Name: " + feature.properties.NAME + "<br>Zone: " + feature.properties.NAME_ENGLI + "<br>MAIL_CODE: " + feature.properties.MAIL_CODE);
-        }
-
-      }).addTo(map);
-    });
-
-    $.getJSON("Libraries_P.json", function(WC) {
-      L.geoJson(WC, {
-        pointToLayer: function(feature, latlng) {
+    var libraryLayer;
+    $.getJSON("Libraries_P.json", function (WC) {
+      libraryLayer = L.geoJson(WC, {
+        pointToLayer: function (feature, latlng) {
           return L.circleMarker(latlng, {
             radius: 5,
             fillColor: "red",
@@ -93,10 +107,31 @@
             fillOpacity: 0.8
           });
         },
-        onEachFeature: function(feature, layer) {
+        onEachFeature: function (feature, layer) {
           layer.bindPopup("<br>ID: " + feature.properties.FID + "<br>Arabic Name: " + feature.properties.BUSNIESS_N + "<br>English Name: " + feature.properties.BUSNIESS_1 + "<br>X Coordination: " + feature.properties.X + "<br>Y Coordination: " + feature.properties.Y);
         }
       }).addTo(map);
+    });
+    function searchPoint() {
+      var searchValue = $('#searchInput').val();
+      if (searchValue.trim() !== '') {
+        var foundLayers = libraryLayer.getLayers().filter(layer => layer.feature.properties.FID === parseInt(searchValue));
+        if (foundLayers.length > 0) {
+          var bounds = L.latLngBounds(foundLayers.map(layer => layer.getLatLng()));
+          map.fitBounds(bounds.pad(0.2));
+          foundLayers.forEach(layer => layer.openPopup());
+        } else {
+          alert("Point not found with given FID.");
+        }
+      } else {
+        alert("Please enter a value to search.");
+      }
+    }
+    $('#searchInput').keypress(function(event){
+      var keycode = (event.keyCode ? event.keyCode : event.which);
+      if(keycode == '13'){
+        searchPoint();
+      }
     });
   </script>
 </body>
