@@ -32,6 +32,13 @@
       font-size: 14px;
       z-index: 1000;
     }
+    #getLocationBtn {
+      position: absolute;
+      top: 50px;
+      left: 20px;
+      z-index: 1000;
+      cursor: pointer;
+    }
     @media (min-width: 769px) {
       #searchInput {
         left: auto;
@@ -51,6 +58,9 @@
         top: 40px;
         left: 20px;
       }
+      #getLocationBtn {
+        left: 50px;
+      }
     }
   </style>
 </head>
@@ -58,10 +68,9 @@
   <div id="map"></div>
   <input type="text" id="searchInput" placeholder="Search by ID" />
   <div id="searchNote">ID values are between 1 and 8.</div>
-  <button onclick="getCurrentLocation()">Get My Location</button>
+  <button id="getLocationBtn">Get My Location</button>
   <script src="https://unpkg.com/leaflet@1.6.0/dist/leaflet.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.min.js"></script>
   <script>
     const mapOptions = {
       zoomSnap: 0.5,
@@ -121,16 +130,62 @@
             radius: 5,
             fillColor: "red",
             color: "red",
-            weight: 1,
+            weight: 1
             opacity: 1,
             fillOpacity: 0.8
           });
         },
         onEachFeature: function(feature, layer) {
-          layer.bindPopup("<br>ID: " + feature.properties .OBJECTID + "<br>Arabic Name: " + feature.properties.BUSNIESS_N + "<br>English Name: " + feature.properties.BUSNIESS_1 + "<br>X Coordination: " + feature.properties.X + "<br>Y Coordination: " + feature.properties.Y);
+          layer.bindPopup("<br>ID: " + feature.properties.OBJECTID + "<br>Arabic Name: " + feature.properties.BUSNIESS_N + "<br>English Name: " + feature.properties.BUSNIESS_1 + "<br>X Coordination: " + feature.properties.X + "<br>Y Coordination: " + feature.properties.Y);
         }
       }).addTo(map);
     });
+    
+    var myLocationMarker;
+    $('#getLocationBtn').click(function() {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(function(position) {
+          var latitude = position.coords.latitude;
+          var longitude = position.coords.longitude;
+          var myLocation = [latitude, longitude];
+          
+          if (myLocationMarker) {
+            myLocationMarker.setLatLng(myLocation);
+          } else {
+            myLocationMarker = L.marker(myLocation).addTo(map);
+          }
+          
+          var nearestLibrary = findNearestLibrary(myLocation);
+          showRoute(myLocation, nearestLibrary);
+        });
+      } else {
+        alert("Geolocation is not supported by this browser.");
+      }
+    });
+    
+    function findNearestLibrary(myLocation) {
+      var nearestLibrary = pointLayer.getLayers().reduce(function(prev, curr) {
+        var prevDistance = prev ? prev.getLatLng().distanceTo(myLocation) : Infinity;
+        var currDistance = curr.getLatLng().distanceTo(myLocation);
+        return prevDistance < currDistance ? prev : curr;
+      }, null);
+      
+      return nearestLibrary.getLatLng();
+    }
+    
+    var route;
+    function showRoute(start, end) {
+      if (route) {
+        route.removeFrom(map);
+      }
+      
+      route = L.Routing.control({
+        waypoints: [
+          L.latLng(start),
+          L.latLng(end)
+        ]
+      }).addTo(map);
+    }
 
     function searchPoint() {
       var searchValue = $('#searchInput').val();
@@ -150,43 +205,22 @@
         alert("Please enter a value to search.");
       }
     }
-
     $('#searchInput').keypress(function(event){
       var keycode = (event.keyCode ? event.keyCode : event.which);
       if(keycode == '13'){
         searchPoint();
       }
     });
-
-    function getCurrentLocation() {
-      if ("geolocation" in navigator) {
-        navigator.geolocation.getCurrentPosition(function(position) {
-          var userLocation = [position.coords.latitude, position.coords.longitude];
-          L.Routing.control({
-            waypoints: [
-              L.latLng(userLocation),
-              findNearestLibrary(userLocation)
-            ]
-          }).addTo(map);
+    map.on('click', function(event) {
+      var layers = [pointLayer, zoneLayer];
+      layers.forEach(function(layer) {
+        layer.eachLayer(function(marker) {
+          if (map.getBounds().contains(event.latlng) && marker instanceof L.Marker && marker.isPopupOpen()) {
+            marker.closePopup();
+          }
         });
-      } else {
-        alert("Geolocation is not supported by your browser.");
-      }
-    }
-
-    function findNearestLibrary(userLocation) {
-      var nearestLibrary = null;
-      var minDistance = Infinity;
-      pointLayer.eachLayer(function(layer) {
-        var libraryLocation = layer.getLatLng();
-        var distance = userLocation.distanceTo(libraryLocation);
-        if (distance < minDistance) {
-          nearestLibrary = libraryLocation;
-          minDistance = distance;
-        }
       });
-      return nearestLibrary;
-    }
+    });
   </script>
 </body>
 </html>
