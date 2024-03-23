@@ -191,7 +191,7 @@
           nearestLibrary = layer;
         }
       });
-            if (window.routingControl) {
+      if (window.routingControl) {
         map.removeControl(window.routingControl);
       }
 
@@ -200,7 +200,31 @@
           L.latLng(myLocation.lat, myLocation.lng),
           nearestLibrary.getLatLng()
         ],
-        routeWhileDragging: true
+        routeWhileDragging: true,
+        show: true, // Show the control immediately
+        lineOptions: {
+          styles: [{color: '#ff8e00', opacity: 0.7, weight: 5}]
+        },
+        createMarker: function(i, waypoint, n) {
+          if (i === 0) {
+            // Origin marker
+            return L.marker(waypoint.latLng, {
+              icon: L.divIcon({className: 'routing-icon routing-icon-origin', html: 'You are here'})
+            });
+          } else {
+            // Destination marker
+            return L.marker(waypoint.latLng, {
+              icon: L.divIcon({className: 'routing-icon routing-icon-destination', html: 'Nearest Library'})
+            });
+          }
+        },
+        formatter: new L.Routing.Formatter({
+          units: 'metric', // Use metric units
+          roundingSensitivity: 0.1, // Rounding sensitivity
+          language: 'en' // Language for instructions
+        }),
+        showAlternatives: false, // Hide alternative routes
+        routeWhileDragging: false // Do not recalculate route while dragging
       }).addTo(map);
     });
   </script>
