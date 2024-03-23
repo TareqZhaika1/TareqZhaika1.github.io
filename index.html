@@ -6,67 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.6.0/dist/leaflet.css" />
   <style>
-    body {
-      margin: 0;
-      height: 100vh;
-      width: 100%;
-      position: relative;
-    }
-    #map {
-      position: absolute;
-      width: 100%;
-      top: 0;
-      bottom: 0;
-    }
-    #searchInput {
-      position: absolute;
-      top: 10px;
-      left: 20px;
-      z-index: 1000;
-      width: calc(100% - 100px);
-      max-width: 200px;
-    }
-    #searchNote {
-      position: absolute;
-      color: red;
-      font-size: 14px;
-      z-index: 1000;
-    }
-    #locateButton {
-      position: absolute;
-      top: 50px;
-      left: 20px;
-      z-index: 1000;
-    }
-    @media (min-width: 769px) {
-      #searchInput {
-        left: auto;
-        right: 20px;
-      }
-      #searchNote {
-        left: auto;
-        right: 20px;
-        top: 40px;
-      }
-      #locateButton {
-        left: auto;
-        right: 20px;
-        top: 80px;
-      }
-    }
-    @media (max-width: 768px) {
-      #searchInput {
-        left: 50px;
-      }
-      #searchNote {
-        top: 40px;
-        left: 20px;
-      }
-      #locateButton {
-        left: 50px;
-        top: 100px;
-      }
-    }
+    /* CSS styles go here */
   </style>
 </head>
 <body>
@@ -74,91 +14,246 @@
   <input type="text" id="searchInput" placeholder="Search by ID" />
   <div id="searchNote">ID values are between 1 and 8.</div>
   <button id="locateButton">Get my location</button>
-  <script src="https://unpkg.com/leaflet@1.6.0/dist/leaflet.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-routing-machine/3.2.12/leaflet-routing-machine.js"></script>
-  <script>
-    const mapOptions = {
-      zoomSnap: 0.5,
-      center: [31.9045, 35.2045],
-      zoom: 17.5,
-    };
-    const map = L.map("map", mapOptions);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-    }).addTo(map);
-
-    var pointLayer;
-    $.getJSON("Libraries_P.json", function(WC) {
-      pointLayer = L.geoJson(WC, {
-        pointToLayer: function(feature, latlng) {
-          return L.circleMarker(latlng, {
-            radius: 5,
-            fillColor: "red",
-            color: "red",
-            weight: 1,
-            opacity: 1,
-            fillOpacity: 0.8
-          });
-        },
-        onEachFeature: function(feature, layer) {
-          layer.bindPopup("<br>ID: " + feature.properties.OBJECTID + "<br>Arabic Name: " + feature.properties.BUSNIESS_N + "<br>English Name: " + feature.properties.BUSNIESS_1 + "<br>X Coordination: " + feature.properties.X + "<br>Y Coordination: " + feature.properties.Y);
-        }
-      }).addTo(map);
-    });
-
-    function searchPoint() {
-      var searchValue = $('#searchInput').val();
-      if (searchValue.trim() !== '') {
-        var foundLayers = pointLayer.getLayers().filter(layer => layer.feature.properties.OBJECTID === parseInt(searchValue));
-        if (foundLayers.length > 0) {
-          var bounds = L.latLngBounds(foundLayers.map(layer => layer.getLatLng()));
-          map.fitBounds(bounds.pad(0.2));
-          foundLayers.forEach(layer => layer.openPopup());
-        } else {
-          L.popup()
-            .setLatLng(map.getCenter())
-            .setContent("Point not found with given OBJECTID.")
-            .openOn(map);
-        }
-      } else {
-        alert("Please enter a value to search.");
-      }
-    }
-
-    $('#searchInput').keypress(function(event){
-      var keycode = (event.keyCode ? event.keyCode : event.which);
-      if(keycode == '13'){
-        searchPoint();
-      }
-    });
-
-    $('#locateButton').click(function() {
-      map.locate({setView: true, maxZoom: 16});
-    });
-
-    map.on('locationfound', function(e) {
-      var myLocation = e.latlng;
-      var nearestLibrary;
-      var minDist = Infinity;
-      pointLayer.eachLayer(function(layer) {
-        var dist = myLocation.distanceTo(layer.getLatLng());
-        if (dist < minDist) {
-          minDist = dist;
-          nearestLibrary = layer;
-        }
-      });
-      L.Routing.control({
-        waypoints: [
-          L.latLng(myLocation.lat, myLocation.lng),
-          nearestLibrary.getLatLng()
-        ],
-        routeWhileDragging: true,
-        lineOptions: {
-          styles: [{color: 'blue', opacity: 0.8, weight: 5}]
-        }
-      }).addTo(map);
-    });
-  </script>
+  <!-- Scripts will go here -->
 </body>
 </html>
+<!-- Scripts -->
+<script src="https://unpkg.com/leaflet@1.6.0/dist/leaflet.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-routing-machine/3.2.12/leaflet-routing-machine.js"></script>
+<script>
+  // Map options
+  const mapOptions = {
+    zoomSnap: 0.5,
+    center: [31.9045, 35.2045],
+    zoom: 17.5,
+  };
+
+  // Initialize map
+  const map = L.map("map", mapOptions);
+
+  // Add base map layer
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+    subdomains: 'abcd',
+    maxZoom: 20
+  }).addTo(map);
+</script>
+<script>
+  // Function to get color based on zone name
+  function getColor(name) {
+    switch (name) {
+      case "Al-Masyoun":
+        return "red";
+      case "Baten El-Hawa":
+        return "blue";
+      case "City Center":
+        return "Green";
+      case "Old City":
+        return "Orange";
+      case "Al-Wad":
+        return "Purple";
+      case "The Industrial Area":
+        return "Pink";
+      case "Al-Itha'a":
+        return "Gray";
+      case "Al-Tireh":
+        return "White";
+      default:
+        return "yellow";
+    }
+  }
+</script>
+<script>
+  // Load zone data
+  var zoneLayer;
+  $.getJSON("RamallahZones.json", function (RZ) {
+    zoneLayer = L.geoJson(RZ, {
+      style: function (feature) {
+        return {
+          fillColor: getColor(feature.properties.NAME_ENGLI),
+          fillOpacity: 0.3,
+          color: "yellow",
+          weight: 1.0,
+          opacity: 0.7
+        };
+      },
+      onEachFeature: function (feature, layer) {
+        layer.bindPopup("Zone Name: " + feature.properties.NAME + "<br>Zone: " + feature.properties.NAME_ENGLI + "<br>MAIL_CODE: " + feature.properties.MAIL_CODE);
+      }
+    }).addTo(map);
+  });
+</script>
+<script>
+  // Load point data (libraries)
+  var pointLayer;
+  $.getJSON("Libraries_P.json", function(WC) {
+    pointLayer = L.geoJson(WC, {
+      pointToLayer: function(feature, latlng) {
+        return L.circleMarker(latlng, {
+          radius: 5,
+          fillColor: "red",
+          color: "red",
+          weight: 1,
+          opacity: 1,
+          fillOpacity: 0.8
+        });
+      },
+      onEachFeature: function(feature, layer) {
+        layer.bindPopup("<br>ID: " + feature.properties.OBJECTID + "<br>Arabic Name: " + feature.properties.BUSNIESS_N + "<br>English Name: " + feature.properties.BUSNIESS_1 + "<br>X Coordination: " + feature.properties.X + "<br>Y Coordination: " + feature.properties.Y);
+      }
+    }).addTo(map);
+  });
+</script>
+<script>
+  // Function to search for points by ID
+  function searchPoint() {
+    var searchValue = $('#searchInput').val();
+    if (searchValue.trim() !== '') {
+      var foundLayers = pointLayer.getLayers().filter(layer => layer.feature.properties.OBJECTID === parseInt(searchValue));
+      if (foundLayers.length > 0) {
+        var bounds = L.latLngBounds(foundLayers.map(layer => layer.getLatLng()));
+        map.fitBounds(bounds.pad(0.2));
+        foundLayers.forEach(layer => layer.openPopup());
+      } else {
+        L.popup()
+          .setLatLng(map.getCenter())
+          .setContent("Point not found with given OBJECTID.")
+          .openOn(map);
+      }
+    } else {
+      alert("Please enter a value to search.");
+    }
+  }
+
+  // Search point when Enter key is pressed
+  $('#searchInput').keypress(function(event){
+    var keycode = (event.keyCode ? event.keyCode : event.which);
+    if(keycode == '13'){
+      searchPoint();
+    }
+  });
+</script>
+<script>
+  // Locate user's position and find nearest library
+  $('#locateButton').click(function() {
+    map.locate({setView: true, maxZoom: 16});
+  });
+
+  map.on('locationfound', function(e) {
+    var myLocation = e.latlng;
+    var nearestLibrary;
+    var minDist = Infinity;
+    pointLayer.eachLayer(function(layer) {
+      var dist = myLocation.distanceTo(layer.getLatLng());
+      if (dist < minDist) {
+        minDist = dist;
+        nearestLibrary = layer;
+      }
+    });
+    L.Routing.control({
+      waypoints: [
+        L.latLng(myLocation.lat, myLocation.lng),
+        nearestLibrary.getLatLng()
+      ],
+      routeWhileDragging: true
+    }).addTo(map);
+  });
+</script>
+<script>
+  // Locate user's position and find nearest library
+  $('#locateButton').click(function() {
+    map.locate({setView: true, maxZoom: 16});
+  });
+
+  map.on('locationfound', function(e) {
+    var myLocation = e.latlng;
+    var nearestLibrary;
+    var minDist = Infinity;
+    pointLayer.eachLayer(function(layer) {
+      var dist = myLocation.distanceTo(layer.getLatLng());
+      if (dist < minDist) {
+        minDist = dist;
+        nearestLibrary = layer;
+      }
+    });
+    L.Routing.control({
+      waypoints: [
+        L.latLng(myLocation.lat, myLocation.lng),
+        nearestLibrary.getLatLng()
+      ],
+      routeWhileDragging: true
+    }).addTo(map);
+  });
+</script>
+<script>
+  // Locate user's position and find nearest library
+  $('#locateButton').click(function() {
+    map.locate({setView: true, maxZoom: 16});
+  });
+
+  map.on('locationfound', function(e) {
+    var myLocation = e.latlng;
+    var nearestLibrary;
+    var minDist = Infinity;
+    pointLayer.eachLayer(function(layer) {
+      var dist = myLocation.distanceTo(layer.getLatLng());
+      if (dist < minDist) {
+        minDist = dist;
+        nearestLibrary = layer;
+      }
+    });
+
+    // Clear previous routing control, if any
+    if (window.routingControl) {
+      map.removeControl(window.routingControl);
+    }
+
+    // Create routing control and add it to the map
+    window.routingControl = L.Routing.control({
+      waypoints: [
+        L.latLng(myLocation.lat, myLocation.lng),
+        nearestLibrary.getLatLng()
+      ],
+      routeWhileDragging: true
+    }).addTo(map);
+  });
+</script>
+<script>
+  // Locate user's position and find nearest library
+  $('#locateButton').click(function() {
+    map.locate({setView: true, maxZoom: 16});
+  });
+
+  map.on('locationfound', function(e) {
+    var myLocation = e.latlng;
+    var nearestLibrary;
+    var minDist = Infinity;
+    pointLayer.eachLayer(function(layer) {
+      var dist = myLocation.distanceTo(layer.getLatLng());
+      if (dist < minDist) {
+        minDist = dist;
+        nearestLibrary = layer;
+      }
+    });
+
+    // Clear previous routing control, if any
+    if (window.routingControl) {
+      map.removeControl(window.routingControl);
+    }
+
+    // Create routing control and add it to the map
+    window.routingControl = L.Routing.control({
+      waypoints: [
+        L.latLng(myLocation.lat, myLocation.lng),
+        nearestLibrary.getLatLng()
+      ],
+      routeWhileDragging: true
+    }).addTo(map);
+  });
+</script>
+<!-- Closing script tag -->
+</script>
+</body>
+</html>
+
