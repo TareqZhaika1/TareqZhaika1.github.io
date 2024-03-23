@@ -32,16 +32,11 @@
       font-size: 14px;
       z-index: 1000;
     }
-    #getLocationBtn {
+    #locateButton {
       position: absolute;
       top: 50px;
       left: 20px;
       z-index: 1000;
-      padding: 8px;
-      background-color: #fff;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-      cursor: pointer;
     }
     @media (min-width: 769px) {
       #searchInput {
@@ -53,7 +48,7 @@
         right: 20px;
         top: 40px;
       }
-      #getLocationBtn {
+      #locateButton {
         left: auto;
         right: 20px;
         top: 80px;
@@ -67,7 +62,7 @@
         top: 40px;
         left: 20px;
       }
-      #getLocationBtn {
+      #locateButton {
         left: 50px;
         top: 100px;
       }
@@ -78,7 +73,7 @@
   <div id="map"></div>
   <input type="text" id="searchInput" placeholder="Search by ID" />
   <div id="searchNote">ID values are between 1 and 8.</div>
-  <button id="getLocationBtn">Get My Location</button>
+  <button id="locateButton">Get my location</button>
   <script src="https://unpkg.com/leaflet@1.6.0/dist/leaflet.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
   <script>
@@ -93,6 +88,28 @@
       subdomains: 'abcd',
       maxZoom: 20
     }).addTo(map);
+    function getColor(name) {
+      switch (name) {
+        case "Al-Masyoun":
+          return "red";
+        case "Baten El-Hawa":
+          return "blue";
+        case "City Center":
+          return "Green";
+        case "Old City":
+          return "Orange";
+        case "Al-Wad":
+          return "Purple";
+        case "The Industrial Area":
+          return "Pink";
+        case "Al-Itha'a":
+          return "Gray";
+        case "Al-Tireh":
+          return "White";
+        default:
+          return "yellow";
+      }
+    }
     var zoneLayer;
     $.getJSON("RamallahZones.json", function (RZ) {
       zoneLayer = L.geoJson(RZ, {
@@ -126,78 +143,45 @@
         onEachFeature: function(feature, layer) {
           layer.bindPopup("<br>ID: " + feature.properties.OBJECTID + "<br>Arabic Name: " + feature.properties.BUSNIESS_N + "<br>English Name: " + feature.properties.BUSNIESS_1 + "<br>X Coordination: " + feature.properties.X + "<br>Y Coordination: " + feature.properties.Y);
         }
-        }).addTo(map);
-});
-    function getColor(name) {
-  switch (name) {
-    case "Al-Masyoun":
-      return "red";
-    case "Baten El-Hawa":
-      return "blue";
-    case "City Center":
-      return "Green";
-    case "Old City":
-      return "Orange";
-    case "Al-Wad":
-      return "Purple";
-    case "The Industrial Area":
-      return "Pink";
-    case "Al-Itha'a":
-      return "Gray";
-    case "Al-Tireh":
-      return "White";
-    default:
-      return "yellow";
-  }
-}
-
-function searchPoint() {
-  var searchValue = $('#searchInput').val();
-  if (searchValue.trim() !== '') {
-    var foundLayers = pointLayer.getLayers().filter(layer => layer.feature.properties.OBJECTID === parseInt(searchValue));
-    if (foundLayers.length > 0) {
-      var bounds = L.latLngBounds(foundLayers.map(layer => layer.getLatLng()));
-      map.fitBounds(bounds.pad(0.2));
-      foundLayers.forEach(layer => layer.openPopup());
-    } else {
-      L.popup()
-        .setLatLng(map.getCenter())
-        .setContent("Point not found with given OBJECTID.")
-        .openOn(map);
+      }).addTo(map);
+    });
+    function searchPoint() {
+      var searchValue = $('#searchInput').val();
+      if (searchValue.trim() !== '') {
+        var foundLayers = pointLayer.getLayers().filter(layer => layer.feature.properties.OBJECTID === parseInt(searchValue));
+        if (foundLayers.length > 0) {
+          var bounds = L.latLngBounds(foundLayers.map(layer => layer.getLatLng()));
+          map.fitBounds(bounds.pad(0.2));
+          foundLayers.forEach(layer => layer.openPopup());
+        } else {
+          L.popup()
+            .setLatLng(map.getCenter())
+            .setContent("Point not found with given OBJECTID.")
+            .openOn(map);
+        }
+      } else {
+        alert("Please enter a value to search.");
+      }
     }
-  } else {
-    alert("Please enter a value to search.");
-  }
-}
-
-$('#searchInput').keypress(function(event){
-  var keycode = (event.keyCode ? event.keyCode : event.which);
-  if(keycode == '13'){
-    searchPoint();
-  }
-});
-
-$('#getLocationBtn').on('click', function() {
-  if (navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition(showPosition);
-  } else {
-    alert("Geolocation is not supported by this browser.");
-  }
-});
-
-function showPosition(position) {
-  var userLocation = L.marker([position.coords.latitude, position.coords.longitude]).addTo(map);
-  var nearestLibrary = pointLayer.getLayers()[0]; // Placeholder for finding nearest library
-  var route = L.Routing.control({
-    waypoints: [
-      L.latLng(position.coords.latitude, position.coords.longitude),
-      L.latLng(nearestLibrary.getLatLng().lat, nearestLibrary.getLatLng().lng)
-    ],
-    routeWhileDragging: true,
-    show: false // Hide the route initially
-  }).addTo(map);
-  route.show(); // Show the route
-}
- </script>
+    $('#searchInput').keypress(function(event){
+      var keycode = (event.keyCode ? event.keyCode : event.which);
+      if(keycode == '13'){
+        searchPoint();
+      }
+    });
+    map.on('click', function(event) {
+      var layers = [pointLayer, zoneLayer];
+      layers.forEach(function(layer) {
+        layer.eachLayer(function(marker) {
+          if (map.getBounds().contains(event.latlng) && marker instanceof L.Marker && marker.isPopupOpen()) {
+            marker.closePopup();
+          }
+        });
+      });
+    });
+    $('#locateButton').on('click', function() {
+      map.locate({setView: true, maxZoom: 16});
+    });
+  </script>
 </body>
 </html>
