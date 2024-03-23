@@ -136,7 +136,10 @@
         if (foundLayers.length > 0) {
           var bounds = L.latLngBounds(foundLayers.map(layer => layer.getLatLng()));
           map.fitBounds(bounds.pad(0.2));
-          foundLayers.forEach(layer => layer.openPopup());
+          foundLayers.forEach(layer => {
+            layer.openPopup();
+            speakText(layer.getPopup().getContent());
+          });
         } else {
           L.popup()
             .setLatLng(map.getCenter())
@@ -146,6 +149,11 @@
       } else {
         alert("Please enter a value to search.");
       }
+    }
+    function speakText(text) {
+      var synth = window.speechSynthesis;
+      var utterThis = new SpeechSynthesisUtterance(text);
+      synth.speak(utterThis);
     }
     $('#searchInput').keypress(function(event){
       var keycode = (event.keyCode ? event.keyCode : event.which);
