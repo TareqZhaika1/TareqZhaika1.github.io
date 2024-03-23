@@ -14,6 +14,10 @@
       position: relative;
       color: red; /* Set text color to red */
     }
+    
+    #map {
+      height: 100%;
+    }
   </style>
 </head>
 <body>
@@ -25,12 +29,10 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-routing-machine/3.2.12/leaflet-routing-machine.js"></script>
   <script>
-    const mapOptions = {
-      zoomSnap: 0.5,
-      center: [31.9045, 35.2045],
-      zoom: 17.5,
-    };
-    const map = L.map("map", mapOptions);
+    // Initialize Leaflet map
+    var map = L.map('map').setView([31.9045, 35.2045], 17.5);
+
+    // Add CartoDB dark basemap
     L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
       subdomains: 'abcd',
