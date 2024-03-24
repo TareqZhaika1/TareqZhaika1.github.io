@@ -39,9 +39,12 @@
       z-index: 1000;
     }
     .leaflet-routing-container {
-      background-color: red; /* Change the background color to red */
       color: white; /* Change the font color to white */
       font-size: 12px; /* Smaller font size for route instructions */
+      position: absolute; /* Add position absolute */
+      left: 20px; /* Adjust left position */
+      top: 120px; /* Adjust top position */
+      background-color: transparent !important; /* Remove background color */
     }
     @media (min-width: 769px) {
       #searchInput {
@@ -177,13 +180,29 @@
       window.routingControl = L.Routing.control({
         waypoints: [
           L.latLng(myLocation.lat, myLocation.lng),
-          nearestLibrary.getLatLng()
+          L.latLng(nearestLibrary.getLatLng().lat, nearestLibrary.getLatLng().lng)
         ],
         routeWhileDragging: true,
         lineOptions: {
           styles: [{ color: 'red', opacity: 0.8, weight: 6 }]
         }
       }).addTo(map);
+    });
+
+    $('#searchInput').keypress(function(e) {
+      if (e.which == 13) {
+        //
+        var searchedID = parseInt($(this).val());
+        if (!isNaN(searchedID) && searchedID >= 1 && searchedID <= 8) {
+          // Your search functionality based on the entered ID
+          // For example, you can zoom to the corresponding feature on the map
+          // Replace the following example code with your actual search implementation
+          map.setView([31.9045, 35.2045], 17.5); // Zoom to a default location
+          alert("You searched for ID: " + searchedID); // Example alert
+        } else {
+          alert("Please enter a valid ID between 1 and 8."); // Example alert for invalid ID
+        }
+      }
     });
   </script>
 </body>
