@@ -42,12 +42,11 @@
       background-color: transparent; /* No background color */
       color: red; /* Font color to red */
       font-size: 12px; /* Smaller font size for route instructions */
-      position: relative; /* Ensure proper positioning */
-      left: 20px; /* Move the container 20 pixels from the left */
-      transform: translateX(-50%); /* Move the container 50% of its own width to the left */
-      bottom: 50px; /* Move the container 50 pixels from the bottom */
+      position: absolute; /* Ensure absolute positioning */
+      right: 20px; /* Move the container 20 pixels from the right */
+      bottom: 20px; /* Move the container 20 pixels from the bottom */
+      transform: translate(50%, 50%); /* Move the container 50% of its own width and height to the bottom-right */
     }
-
 
     @media (min-width: 769px) {
       #searchInput {
