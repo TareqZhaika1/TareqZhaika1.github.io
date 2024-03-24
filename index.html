@@ -191,29 +191,6 @@
         }
       }).addTo(map);
     });
-  // Assuming you have a Leaflet map instance and a routing control
-var map = L.map('map');
-var control = L.Routing.control({
-    routeLine: function(route, options) {
-        // Custom styling for route lines
-        return L.Routing.line(route, {
-            styles: [{color: 'blue', opacity: 0.6, weight: 6}]
-        });
-    }
-}).addTo(map);
-
-// Listen for the routesFound event
-control.on('routesfound', function(e) {
-    var routes = e.routes;
-    var selectedRoute = routes[0]; // Assuming only one route is selected
-    var instructions = selectedRoute.instructions;
-    // Update UI to display instructions
-    updateInstructions(instructions);
-});
-
-function updateInstructions(instructions) {
-  
-}
   </script>
 </body>
 </html>
