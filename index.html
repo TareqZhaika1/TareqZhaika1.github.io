@@ -5,7 +5,6 @@
   <title>Ramallah</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.6.0/dist/leaflet.css" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet-routing-machine/3.2.12/leaflet-routing-machine.css" /> <!-- Add CSS for routing -->
   <style>
     body {
       margin: 0;
@@ -30,7 +29,7 @@
     #searchNote {
       position: absolute;
       color: red;
-      font-size: 12px;
+      font-size: 12px; /* Smaller font size for legend */
       z-index: 1000;
     }
     #locateButton {
@@ -39,14 +38,12 @@
       left: 20px;
       z-index: 1000;
     }
-    /* Remove background color and adjust position for routing control */
     .leaflet-routing-container {
-      background-color: transparent !important;
-      color: white;
-      font-size: 12px;
-      position: absolute;
-      left: 20px;
-      top: 120px;
+      color: white; /* Change the font color to white */
+      font-size: 12px; /* Smaller font size for route instructions */
+      position: absolute; /* Position the route instructions */
+      left: 20px; /* Adjust left position */
+      top: 120px; /* Adjust top position */
     }
     @media (min-width: 769px) {
       #searchInput {
@@ -63,9 +60,6 @@
         right: 20px;
         top: 80px;
       }
-      .leaflet-routing-container {
-        left: 20px; /* Adjust left position */
-      }
     }
     @media (max-width: 768px) {
       #searchInput {
@@ -78,9 +72,6 @@
       #locateButton {
         left: 50px;
         top: 100px;
-      }
-      .leaflet-routing-container {
-        left: 20px; /* Adjust left position */
       }
     }
   </style>
@@ -164,18 +155,6 @@
           layer.bindPopup("<br>ID: " + feature.properties.OBJECTID + "<br>Arabic Name: " + feature.properties.BUSNIESS_N + "<br>English Name: " + feature.properties.BUSNIESS_1 + "<br>X Coordination: " + feature.properties.X + "<br>Y Coordination: " + feature.properties.Y);
         }
       }).addTo(map);
-
-      // Initialize the routing control
-      var control = L.Routing.control({
-        waypoints: [
-          L.latLng(31.9045, 35.2045), // Starting point (Ramallah coordinates)
-          // Add the coordinates of your desired destination here
-        ],
-        routeWhileDragging: true,
-        lineOptions: {
-          styles: [{ color: 'red', opacity: 0.8, weight: 6 }]
-        }
-      }).addTo(map);
     });
 
     $('#locateButton').click(function() {
@@ -190,40 +169,24 @@
         var dist = myLocation.distanceTo(layer.getLatLng());
         if (dist < minDist) {
           minDist = dist;
-   nearestLibrary = layer;
-  }
-});
+          nearestLibrary = layer;
+        }
+      });
+      if (window.routingControl) {
+        map.removeControl(window.routingControl);
+      }
 
-if (window.routingControl) {
-  map.removeControl(window.routingControl);
-}
-
-window.routingControl = L.Routing.control({
-  waypoints: [
-    L.latLng(myLocation.lat, myLocation.lng),
-    nearestLibrary.getLatLng()
-  ],
-  routeWhileDragging: true,
-  lineOptions: {
-    styles: [{ color: 'red', opacity: 0.8, weight: 6 }]
-  }
-}).addTo(map);
-});
-if (window.routingControl) {
-  map.removeControl(window.routingControl);
-}
-
-window.routingControl = L.Routing.control({
-  waypoints: [
-    L.latLng(myLocation.lat, myLocation.lng),
-    nearestLibrary.getLatLng()
-  ],
-  routeWhileDragging: true,
-  lineOptions: {
-    styles: [{ color: 'red', opacity: 0.8, weight: 6 }]
-  }
-}).addTo(map);
-});
-</script>
+      window.routingControl = L.Routing.control({
+        waypoints: [
+          L.latLng(myLocation.lat, myLocation.lng),
+          nearestLibrary.getLatLng()
+        ],
+        routeWhileDragging: true,
+        lineOptions: {
+          styles: [{ color: 'red', opacity: 0.8, weight: 6 }]
+        }
+      }).addTo(map);
+    });
+  </script>
 </body>
 </html>
