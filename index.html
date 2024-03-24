@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <title>Ramallah</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.6.0/dist/leaflet.css" />
   <style>
     body {
       margin: 0;
@@ -29,23 +29,57 @@
     #searchNote {
       position: absolute;
       color: red;
-      font-size: 12px;
+      font-size: 12px; /* Smaller font size for legend */
       z-index: 1000;
-      top: 40px;
-      left: 20px;
     }
     #locateButton {
       position: absolute;
-      top: 80px;
+      top: 50px;
       left: 20px;
       z-index: 1000;
     }
     .leaflet-routing-container {
-      color: white;
-      font-size: 12px;
-      position: absolute;
-      left: 20px;
-      top: 120px;
+      color: white; /* Change the font color to white */
+      font-size: 12px; /* Smaller font size for route instructions */
+      position: absolute; /* Add position absolute */
+      left: 20px; /* Adjust left position */
+      top: 120px; /* Adjust top position */
+      background-color: transparent !important; /* Remove background color */
+    }
+    @media (min-width: 769px) {
+      #searchInput {
+        left: auto;
+        right: 20px;
+      }
+      #searchNote {
+        left: auto;
+        right: 20px;
+        top: 40px;
+      }
+      #locateButton {
+        left: auto;
+        right: 20px;
+        top: 80px;
+      }
+      .leaflet-routing-container {
+        left: 20px; /* Adjust left position */
+      }
+    }
+    @media (max-width: 768px) {
+      #searchInput {
+        left: 50px;
+      }
+      #searchNote {
+        top: 40px;
+        left: 20px;
+      }
+      #locateButton {
+        left: 50px;
+        top: 100px;
+      }
+      .leaflet-routing-container {
+        left: 20px; /* Adjust left position */
+      }
     }
   </style>
 </head>
@@ -54,7 +88,7 @@
   <input type="text" id="searchInput" placeholder="Search by ID" />
   <div id="searchNote">ID values are between 1 and 8.</div>
   <button id="locateButton">Get my location</button>
-  <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/leaflet@1.6.0/dist/leaflet.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-routing-machine/3.2.12/leaflet-routing-machine.js"></script>
   <script>
@@ -70,7 +104,6 @@
       maxZoom: 20
     }).addTo(map);
 
-    // Function to handle color based on name
     function getColor(name) {
       switch (name) {
         case "Al-Masyoun":
@@ -78,25 +111,25 @@
         case "Baten El-Hawa":
           return "blue";
         case "City Center":
-          return "green";
+          return "Green";
         case "Old City":
-          return "orange";
+          return "Orange";
         case "Al-Wad":
-          return "purple";
+          return "Purple";
         case "The Industrial Area":
-          return "pink";
+          return "Pink";
         case "Al-Itha'a":
-          return "gray";
+          return "Gray";
         case "Al-Tireh":
-          return "white";
+          return "White";
         default:
           return "yellow";
       }
     }
 
-    // Load GeoJSON data for zones
+    var zoneLayer;
     $.getJSON("RamallahZones.json", function (RZ) {
-      L.geoJson(RZ, {
+      zoneLayer = L.geoJson(RZ, {
         style: function (feature) {
           return {
             fillColor: getColor(feature.properties.NAME_ENGLI),
@@ -112,9 +145,9 @@
       }).addTo(map);
     });
 
-    // Load GeoJSON data for points
+    var pointLayer;
     $.getJSON("Libraries_P.json", function(WC) {
-      L.geoJson(WC, {
+      pointLayer = L.geoJson(WC, {
         pointToLayer: function(feature, latlng) {
           return L.circleMarker(latlng, {
             radius: 5,
@@ -131,12 +164,10 @@
       }).addTo(map);
     });
 
-    // Function to handle locating user's position
     $('#locateButton').click(function() {
       map.locate({setView: true, maxZoom: 16});
     });
 
-    // Event listener for locating user's position
     map.on('locationfound', function(e) {
       var myLocation = e.latlng;
       var nearestLibrary;
@@ -155,32 +186,13 @@
       window.routingControl = L.Routing.control({
         waypoints: [
           L.latLng(myLocation.lat, myLocation.lng),
-          L.latLng(nearestLibrary.getLatLng().lat, nearestLibrary.getLatLng().lng)
+          nearestLibrary.getLatLng()
         ],
         routeWhileDragging: true,
         lineOptions: {
           styles: [{ color: 'red', opacity: 0.8, weight: 6 }]
         }
       }).addTo(map);
-    });
-
-    // Event listener for searching by ID
-    $('#searchInput').keypress(function(e) {
-      if (e.which == 13) {
-        var searchedID = parseInt($(this).val());
-        if (!isNaN(searchedID) && searchedID >= 1 && searchedID <= 8) {
-          // Search for the feature with the entered ID
-          pointLayer.eachLayer(function(layer) {
-            if (layer.feature.properties.OBJECTID === searchedID) {
-              var latLng = layer.getLatLng();
-              map.setView(latLng, 17); // Zoom to the found feature
-              layer.openPopup(); // Show popup for the found feature
-            }
-          });
-        } else {
-          alert("Please enter a valid ID between 1 and 8.");
-        }
-      }
     });
   </script>
 </body>
