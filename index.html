@@ -117,6 +117,7 @@
         case "Al-Tireh":
           return "White";
         default:
+          default:
           return "yellow";
       }
     }
@@ -191,16 +192,18 @@
 
     $('#searchInput').keypress(function(e) {
       if (e.which == 13) {
-        //
         var searchedID = parseInt($(this).val());
         if (!isNaN(searchedID) && searchedID >= 1 && searchedID <= 8) {
-          // Your search functionality based on the entered ID
-          // For example, you can zoom to the corresponding feature on the map
-          // Replace the following example code with your actual search implementation
-          map.setView([31.9045, 35.2045], 17.5); // Zoom to a default location
-          alert("You searched for ID: " + searchedID); // Example alert
+          // Search for the feature with the entered ID
+          pointLayer.eachLayer(function(layer) {
+            if (layer.feature.properties.OBJECTID === searchedID) {
+              var latLng = layer.getLatLng();
+              map.setView(latLng, 17); // Zoom to the found feature
+              layer.openPopup(); // Show popup for the found feature
+            }
+          });
         } else {
-          alert("Please enter a valid ID between 1 and 8."); // Example alert for invalid ID
+          alert("Please enter a valid ID between 1 and 8.");
         }
       }
     });
