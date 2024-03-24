@@ -39,9 +39,12 @@
       z-index: 1000;
     }
     .leaflet-routing-container {
-      background-color: transparency; /* Change the background color to red */
-      color: red; /* Change the font color to white */
+      background-color: transparent; /* No background color */
+      color: red; /* Font color to red */
       font-size: 12px; /* Smaller font size for route instructions */
+      position: relative; /* Ensure proper positioning */
+      left: 20px; /* Move the container 20 pixels from the left */
+      transform: translateX(-50%); /* Move the container 50% of its own width to the left */
     }
     @media (min-width: 769px) {
       #searchInput {
