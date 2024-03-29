@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>Ramallah Libraries</title>
+  <title>Ramallah's Libraries</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.6.0/dist/leaflet.css" />
   <style>
@@ -29,22 +29,8 @@
     #searchNote {
       position: absolute;
       color: red;
-      font-size: 12px; /* Smaller font size for legend */
+      font-size: 14px;
       z-index: 1000;
-    }
-    #locateButton {
-      position: absolute;
-      top: 50px;
-      left: 20px;
-      z-index: 1000;
-    }
-    .leaflet-routing-container {
-        background-color: transparent; /* No background color */
-        color: red; /* Font color to red */
-        font-size: 12px; /* Smaller font size for route instructions */
-        position: relative; /* Ensure proper positioning */
-        rightt: 20px; /* Move the container 20 pixels from the right */
-        transform: translate(1%, 80%); /* Move the container 80% of its own height to the bottom */
     }
     @media (min-width: 769px) {
       #searchInput {
@@ -56,11 +42,6 @@
         right: 20px;
         top: 40px;
       }
-      #locateButton {
-        left: auto;
-        right: 20px;
-        top: 80px;
-      }
     }
     @media (max-width: 768px) {
       #searchInput {
@@ -70,10 +51,34 @@
         top: 40px;
         left: 20px;
       }
-      #locateButton {
-        left: 50px;
-        top: 100px;
-      }
+    }
+    .legend {
+      position: absolute;
+      background-color: rgba(255, 255, 255, 0.8);
+      padding: 10px; /* Increased padding for better spacing */
+      border-radius: 5px;
+      bottom: 20px;
+      left: 20px;
+      z-index: 1000;
+      width: 200px; /* Increased width */
+    }
+    .legend-item {
+      margin-bottom: 5px;
+    }
+    .legend-color {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      margin-right: 5px;
+      background-color: red; /* Default color for points */
+      border-radius: 50%; /* Make circles */
+    }
+    .rectangle {
+      width: 15px;
+      height: 10px;
+      display: inline-block;
+      background-color: green; /* Default color for features */
+      margin-right: 5px;
     }
   </style>
 </head>
@@ -81,10 +86,9 @@
   <div id="map"></div>
   <input type="text" id="searchInput" placeholder="Search by ID" />
   <div id="searchNote">ID values are between 1 and 8.</div>
-  <button id="locateButton">Get my location</button>
+  <div id="legend" class="legend"></div>
   <script src="https://unpkg.com/leaflet@1.6.0/dist/leaflet.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-routing-machine/3.2.12/leaflet-routing-machine.js"></script>
   <script>
     const mapOptions = {
       zoomSnap: 0.5,
@@ -98,10 +102,40 @@
       maxZoom: 20
     }).addTo(map);
 
+    // Define legend contents
+    const legendContents = {
+      "Al-Masyoun": "Aqua",
+      "Baten El-Hawa": "blue",
+      "City Center": "Green",
+      "Old City": "Orange",
+      "Al-Wad": "Purple",
+      "The Industrial Area": "Pink",
+      "Al-Itha'a": "Gray",
+      "Al-Tireh": "White",
+      "Libraries": "red" // For points
+    };
+
+    // Add legend control to the map
+    const legend = L.control({position: 'bottomleft'});
+
+    legend.onAdd = function () {
+      const div = L.DomUtil.create('div', 'legend');
+      for (const key in legendContents) {
+        if (legendContents.hasOwnProperty(key)) {
+          const icon = key === "Libraries" ? '<span class="legend-color"></span>' : '<span class="legend-color rectangle" style="background-color:'+ legendContents[key] +'"></span>';
+          div.innerHTML += '<div class="legend-item">' + icon + key + '</div>';
+        }
+      }
+      return div;
+    };
+
+    legend.addTo(map);
+
+    // Function to get color based on feature name
     function getColor(name) {
       switch (name) {
         case "Al-Masyoun":
-          return "red";
+          return "Aqua";
         case "Baten El-Hawa":
           return "blue";
         case "City Center":
@@ -127,10 +161,10 @@
         style: function (feature) {
           return {
             fillColor: getColor(feature.properties.NAME_ENGLI),
-            fillOpacity: 0.3,
+            fillOpacity: 0.5,
             color: "yellow",
-            weight: 1.0,
-            opacity: 0.7
+            weight: 1.2,
+            opacity: 0.9
           };
         },
         onEachFeature: function (feature, layer) {
@@ -144,12 +178,12 @@
       pointLayer = L.geoJson(WC, {
         pointToLayer: function(feature, latlng) {
           return L.circleMarker(latlng, {
-            radius: 5,
+            radius: 5.2,
             fillColor: "red",
             color: "red",
-            weight: 1,
-            opacity: 1,
-            fillOpacity: 0.8
+            weight: 1.2,
+            opacity: 1.4,
+            fillOpacity: 1
           });
         },
         onEachFeature: function(feature, layer) {
@@ -158,35 +192,41 @@
       }).addTo(map);
     });
 
-    $('#locateButton').click(function() {
-      map.locate({setView: true, maxZoom: 16});
+    function searchPoint() {
+      var searchValue = $('#searchInput').val();
+      if (searchValue.trim() !== '') {
+        var foundLayers = pointLayer.getLayers().filter(layer => layer.feature.properties.OBJECTID === parseInt(searchValue));
+        if (foundLayers.length > 0) {
+          var bounds = L.latLngBounds(foundLayers.map(layer => layer.getLatLng()));
+          map.fitBounds(bounds.pad(0.2));
+          foundLayers.forEach(layer => layer.openPopup());
+        } else {
+          L.popup()
+            .setLatLng(map.getCenter())
+            .setContent("Point not found with given OBJECTID.")
+            .openOn(map);
+        }
+      } else {
+        alert("Please enter a value to search.");
+      }
+    }
+
+    $('#searchInput').keypress(function(event){
+      var keycode = (event.keyCode ? event.keyCode : event.which);
+      if(keycode == '13'){
+        searchPoint();
+      }
     });
 
-    map.on('locationfound', function(e) {
-      var myLocation = e.latlng;
-      var nearestLibrary;
-      var minDist = Infinity;
-      pointLayer.eachLayer(function(layer) {
-        var dist = myLocation.distanceTo(layer.getLatLng());
-        if (dist < minDist) {
-          minDist = dist;
-          nearestLibrary = layer;
-        }
+    map.on('click', function(event) {
+      var layers = [pointLayer, zoneLayer];
+      layers.forEach(function(layer) {
+        layer.eachLayer(function(marker) {
+          if (map.getBounds().contains(event.latlng) && marker instanceof L.Marker && marker.isPopupOpen()) {
+            marker.closePopup();
+          }
+        });
       });
-      if (window.routingControl) {
-        map.removeControl(window.routingControl);
-      }
-
-      window.routingControl = L.Routing.control({
-        waypoints: [
-          L.latLng(myLocation.lat, myLocation.lng),
-          nearestLibrary.getLatLng()
-        ],
-        routeWhileDragging: true,
-        lineOptions: {
-          styles: [{ color: 'red', opacity: 0.8, weight: 6 }]
-        }
-      }).addTo(map);
     });
   </script>
 </body>
