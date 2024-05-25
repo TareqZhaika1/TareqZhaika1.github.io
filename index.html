@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>Ramallah Libraries</title>
+  <title>Ramallah Libraries and Colleges</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.6.0/dist/leaflet.css" />
   <style>
@@ -43,7 +43,7 @@
         color: red; /* Font color to red */
         font-size: 12px; /* Smaller font size for route instructions */
         position: relative; /* Ensure proper positioning */
-        rightt: 20px; /* Move the container 20 pixels from the right */
+        right: 20px; /* Move the container 20 pixels from the right */
         transform: translate(1%, 80%); /* Move the container 80% of its own height to the bottom */
     }
     @media (min-width: 769px) {
@@ -88,7 +88,7 @@
   <script>
     const mapOptions = {
       zoomSnap: 0.5,
-      center: [31.960055, 35.182576],
+      center: [31.9045, 35.2045],
       zoom: 17.5,
     };
     const map = L.map("map", mapOptions);
@@ -154,6 +154,26 @@
         },
         onEachFeature: function(feature, layer) {
           layer.bindPopup("<br>ID: " + feature.properties.OBJECTID + "<br>Arabic Name: " + feature.properties.BUSNIESS_N + "<br>English Name: " + feature.properties.BUSNIESS_1 + "<br>X Coordination: " + feature.properties.X + "<br>Y Coordination: " + feature.properties.Y);
+        }
+      }).addTo(map);
+    });
+
+    // Adding the new Colleges layer
+    var collegeLayer;
+    $.getJSON("Colleges.json", function(Colleges) {
+      collegeLayer = L.geoJson(Colleges, {
+        pointToLayer: function(feature, latlng) {
+          return L.circleMarker(latlng, {
+            radius: 5,
+            fillColor: "blue",
+            color: "blue",
+            weight: 1,
+            opacity: 1,
+            fillOpacity: 0.8
+          });
+        },
+        onEachFeature: function(feature, layer) {
+          layer.bindPopup("College ID: " + feature.properties.college_ID);
         }
       }).addTo(map);
     });
