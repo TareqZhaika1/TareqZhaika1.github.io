@@ -158,11 +158,13 @@
       }).addTo(map);
     });
 
-    // Adding the new Colleges layer
+    // Adding the new Colleges layer with debugging
     var collegeLayer;
     $.getJSON("Colleges.json", function(Colleges) {
+      console.log("Colleges data loaded", Colleges); // Debugging log
       collegeLayer = L.geoJson(Colleges, {
         pointToLayer: function(feature, latlng) {
+          console.log("College feature", feature); // Debugging log
           return L.circleMarker(latlng, {
             radius: 5,
             fillColor: "blue",
@@ -176,6 +178,8 @@
           layer.bindPopup("College ID: " + feature.properties.college_ID);
         }
       }).addTo(map);
+    }).fail(function(jqxhr, textStatus, error) {
+      console.error("Error loading Colleges.json: ", textStatus, error); // Error handling
     });
 
     $('#locateButton').click(function() {
