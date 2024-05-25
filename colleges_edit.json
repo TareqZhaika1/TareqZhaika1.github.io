@@ -1,0 +1,23 @@
+{"type":"FeatureCollection", "features": [
+{"type":"Feature","geometry":{"type":"Point","coordinates":[35.18274,31.9607]},"properties":{"college_ID":"A.Shaheen"}},
+{"type":"Feature","geometry":{"type":"Point","coordinates":[35.18311,31.96105]},"properties":{"college_ID":"Bahrain"}},
+{"type":"Feature","geometry":{"type":"Point","coordinates":[35.18359,31.96104]},"properties":{"college_ID":"Khoury"}},
+{"type":"Feature","geometry":{"type":"Point","coordinates":[35.18367,31.9615]},"properties":{"college_ID":"Masrouji"}},
+{"type":"Feature","geometry":{"type":"Point","coordinates":[35.18468,31.96136]},"properties":{"college_ID":"Masri"}},
+{"type":"Feature","geometry":{"type":"Point","coordinates":[35.18291,31.96211]},"properties":{"college_ID":"NPH"}},
+{"type":"Feature","geometry":{"type":"Point","coordinates":[35.18234,31.96152]},"properties":{"college_ID":"Sh.shaheen"}},
+{"type":"Feature","geometry":{"type":"Point","coordinates":[35.18177,31.96116]},"properties":{"college_ID":"GYM"}},
+{"type":"Feature","geometry":{"type":"Point","coordinates":[35.18193,31.95879]},"properties":{"college_ID":"KNH"}},
+{"type":"Feature","geometry":{"type":"Point","coordinates":[35.18312,31.96015]},"properties":{"college_ID":"Alsadik"}},
+{"type":"Feature","geometry":{"type":"Point","coordinates":[35.18368,31.96055]},"properties":{"college_ID":"Bamieh"}},
+{"type":"Feature","geometry":{"type":"Point","coordinates":[35.18045,31.95929]},"properties":{"college_ID":"Aggad"}},
+{"type":"Feature","geometry":{"type":"Point","coordinates":[35.18114,31.9584]},"properties":{"college_ID":"SCI"}},
+{"type":"Feature","geometry":{"type":"Point","coordinates":[35.18235,31.95953]},"properties":{"college_ID":"IOL"}},
+{"type":"Feature","geometry":{"type":"Point","coordinates":[35.1838,31.95827]},"properties":{"college_ID":"O.Abdulhadi"}},
+{"type":"Feature","geometry":{"type":"Point","coordinates":[35.18329,31.95834]},"properties":{"college_ID":"Al.Juraysi"}},
+{"type":"Feature","geometry":{"type":"Point","coordinates":[35.18098,31.95813]},"properties":{"college_ID":"S.Abdulhadi"}},
+{"type":"Feature","geometry":{"type":"Point","coordinates":[35.18258,31.95829]},"properties":{"college_ID":"N.Shaheen"}},
+{"type":"Feature","geometry":{"type":"Point","coordinates":[35.18201,31.96214]},"properties":{"college_ID":"Aweidah"}},
+{"type":"Feature","geometry":{"type":"Point","coordinates":[35.18434,31.96098]},"properties":{"college_ID":"Zeenni"}},
+{"type":"Feature","geometry":{"type":"Point","coordinates":[35.1808,31.96005]},"properties":{"college_ID":"WKS"}}
+]}
