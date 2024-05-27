@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>Birzeit Univresity Campus</title>
+  <title>Birzeit University Campus</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.6.0/dist/leaflet.css" />
   <style>
@@ -18,59 +18,43 @@
       top: 0;
       bottom: 0;
     }
-    #searchInput {
+    #collegeSelect {
       position: absolute;
       top: 10px;
       left: 20px;
       z-index: 1000;
-      width: calc(100% - 100px);
       max-width: 200px;
     }
-    #searchNote {
-      position: absolute;
-      color: red;
-      font-size: 12px; /* Smaller font size for legend */
-      z-index: 1000;
-    }
-    #locateButton {
+    #navigateButton {
       position: absolute;
       top: 50px;
       left: 20px;
       z-index: 1000;
     }
     .leaflet-routing-container {
-        background-color: transparent; /* No background color */
-        color: red; /* Font color to red */
-        font-size: 12px; /* Smaller font size for route instructions */
-        position: relative; /* Ensure proper positioning */
-        right: 20px; /* Move the container 20 pixels from the right */
-        transform: translate(1%, 80%); /* Move the container 80% of its own height to the bottom */
+      background-color: transparent; /* No background color */
+      color: red; /* Font color to red */
+      font-size: 12px; /* Smaller font size for route instructions */
+      position: relative; /* Ensure proper positioning */
+      right: 20px; /* Move the container 20 pixels from the right */
+      transform: translate(1%, 80%); /* Move the container 80% of its own height to the bottom */
     }
     @media (min-width: 769px) {
-      #searchInput {
+      #collegeSelect {
         left: auto;
         right: 20px;
       }
-      #searchNote {
-        left: auto;
-        right: 20px;
-        top: 40px;
-      }
-      #locateButton {
+      #navigateButton {
         left: auto;
         right: 20px;
         top: 80px;
       }
     }
     @media (max-width: 768px) {
-      #searchInput {
+      #collegeSelect {
         left: 50px;
       }
-      #searchNote {
-        top: 40px;
-        left: 20px;
-      }
-      #locateButton {
+      #navigateButton {
         left: 50px;
         top: 100px;
       }
@@ -79,31 +63,33 @@
 </head>
 <body>
   <div id="map"></div>
-  <input type="text" id="searchInput" placeholder="Search by ID" />
-  <div id="searchNote">ID values are between 1 and 8.</div>
-  <button id="locateButton">Get my location</button>
+  <select id="collegeSelect">
+    <option value="">Select a College ID</option>
+  </select>
+  <button id="navigateButton">Take me to my Destination</button>
   <script src="https://unpkg.com/leaflet@1.6.0/dist/leaflet.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-routing-machine/3.2.12/leaflet-routing-machine.js"></script>
   <script>
     const mapOptions = {
       zoomSnap: 0.5,
-      center: [31.960055, 35.182576], // Updated center coordinates
+      center: [31.960055, 35.182576],
       zoom: 17.5,
     };
     const map = L.map("map", mapOptions);
 
-    // Adding the new Esri World Imagery layer
     var Esri_WorldImagery = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
       attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
     }).addTo(map);
 
     var collegeLayer;
+    var collegesData;
+    var selectedCollege;
+
     $.getJSON("colleges_edit.json", function(Colleges) {
-      console.log("colleges_edit data loaded", Colleges); // Debugging log
+      collegesData = Colleges;
       collegeLayer = L.geoJson(Colleges, {
         pointToLayer: function(feature, latlng) {
-          console.log("College feature", feature); // Debugging log
           return L.circleMarker(latlng, {
             radius: 5,
             fillColor: "blue",
@@ -117,17 +103,51 @@
           layer.bindPopup("College ID: " + feature.properties.college_ID);
         }
       }).addTo(map);
+
+      Colleges.features.forEach(function(feature) {
+        $('#collegeSelect').append(new Option("College ID: " + feature.properties.college_ID, feature.properties.college_ID));
+      });
     }).fail(function(jqxhr, textStatus, error) {
-      console.error("Error loading colleges_edit.json: ", textStatus, error); // Error handling
+      console.error("Error loading colleges_edit.json: ", textStatus, error);
     });
 
-    $('#locateButton').click(function() {
+    $('#collegeSelect').change(function() {
+      var selectedId = $(this).val();
+      if (!selectedId) return;
+
+      var selectedFeature = collegesData.features.find(function(feature) {
+        return feature.properties.college_ID == selectedId;
+      });
+
+      if (selectedFeature) {
+        var latlng = L.latLng(selectedFeature.geometry.coordinates[1], selectedFeature.geometry.coordinates[0]);
+        map.setView(latlng, 18);
+        collegeLayer.eachLayer(function(layer) {
+          if (layer.feature.properties.college_ID == selectedId) {
+            layer.openPopup();
+          }
+        });
+        selectedCollege = selectedFeature;
+      }
+    });
+
+    $('#navigateButton').click(function() {
       map.locate({setView: true, maxZoom: 16});
     });
 
     map.on('locationfound', function(e) {
       var myLocation = e.latlng;
-      // Additional location found logic can go here if needed
+      if (!selectedCollege) return;
+
+      var destination = L.latLng(selectedCollege.geometry.coordinates[1], selectedCollege.geometry.coordinates[0]);
+
+      L.Routing.control({
+        waypoints: [
+          myLocation,
+          destination
+        ],
+        routeWhileDragging: true
+      }).addTo(map);
     });
   </script>
 </body>
