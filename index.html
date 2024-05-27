@@ -55,9 +55,8 @@
 <body>
   <div id="map"></div>
   <div id="controls">
-    <div>Select a college ID</div>
     <select id="collegeSelect">
-      <option value="">Select ID</option>
+      <option value="">Select College ID</option>
     </select>
     <button id="navigateButton">Take me to my Destination</button>
   </div>
@@ -79,24 +78,26 @@
     var collegeLayer;
     var collegesData;
     var selectedCollege;
+    var collegeMarkers = {};
 
     $.getJSON("colleges_edit.json", function(Colleges) {
       collegesData = Colleges;
       collegeLayer = L.geoJson(Colleges, {
         pointToLayer: function(feature, latlng) {
-          return L.circleMarker(latlng, {
+          var marker = L.circleMarker(latlng, {
             radius: 5,
             fillColor: "blue",
             color: "blue",
             weight: 1,
             opacity: 1,
             fillOpacity: 0.8
-          });
-        },
-        onEachFeature: function(feature, layer) {
-          layer.bindPopup("College ID: " + feature.properties.college_ID);
+          }).addTo(map);
+          marker.bindPopup("College ID: " + feature.properties.college_ID);
+          collegeMarkers[feature.properties.college_ID] = marker;
+          marker.remove(); // Hide marker initially
+          return marker;
         }
-      }).addTo(map);
+      });
 
       Colleges.features.forEach(function(feature) {
         $('#collegeSelect').append(new Option(feature.properties.college_ID, feature.properties.college_ID));
@@ -116,11 +117,17 @@
       if (selectedFeature) {
         var latlng = L.latLng(selectedFeature.geometry.coordinates[1], selectedFeature.geometry.coordinates[0]);
         map.setView(latlng, 18);
-        collegeLayer.eachLayer(function(layer) {
-          if (layer.feature.properties.college_ID == selectedId) {
-            layer.openPopup();
-          }
-        });
+
+        // Hide all markers
+        for (var key in collegeMarkers) {
+          collegeMarkers[key].remove();
+        }
+
+        // Show the selected marker and open its popup
+        var selectedMarker = collegeMarkers[selectedId];
+        selectedMarker.addTo(map);
+        selectedMarker.openPopup();
+
         selectedCollege = selectedFeature;
       }
     });
