@@ -148,9 +148,13 @@
       map.locate({setView: false, maxZoom: 16}); // Set setView to false
     });
 
-    function updateDirections(steps) {
+    function updateDirections(steps, distance, time) {
       const directionsContainer = document.getElementById('directions');
       directionsContainer.innerHTML = ''; // Clear previous directions
+
+      const header = document.createElement('div');
+      header.innerHTML = `<strong>Distance:</strong> ${distance}, <strong>Time:</strong> ${time}`;
+      directionsContainer.appendChild(header);
 
       // Show only the next 3 steps
       for (let i = 0; i < Math.min(steps.length, 3); i++) {
@@ -201,7 +205,8 @@
           // Update directions whenever routes are found
           const routes = e.routes;
           if (routes.length > 0) {
-            updateDirections(routes[0].instructions);
+            const route = routes[0];
+            updateDirections(route.instructions, route.summary.totalDistance + ' m', route.summary.totalTime + ' min');
           }
         }).addTo(map);
 
