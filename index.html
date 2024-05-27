@@ -11,6 +11,7 @@
       height: 100vh;
       width: 100%;
       position: relative;
+      font-family: Arial, sans-serif;
     }
     #map {
       position: absolute;
@@ -18,24 +19,51 @@
       top: 0;
       bottom: 0;
     }
-    #collegeSelect, #modeSelect {
+    #travelModeContainer {
       position: absolute;
       top: 10px;
       right: 20px;
       z-index: 1000;
+      background: white;
+      padding: 10px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      display: flex;
+      align-items: center;
+      gap: 10px;
     }
-    #modeSelect {
-      top: 40px;
+    .travelMode {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      cursor: pointer;
+    }
+    .travelMode img {
+      width: 32px;
+      height: 32px;
+    }
+    .travelMode span {
+      font-size: 12px;
+      margin-top: 5px;
+    }
+    .travelMode.active {
+      border-bottom: 2px solid blue;
     }
     #locateButton {
       position: absolute;
       top: 70px;
       right: 20px;
       z-index: 1000;
+      background: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      cursor: pointer;
     }
     #directions {
       position: absolute;
-      top: 100px;
+      top: 120px;
       right: 20px;
       z-index: 1000;
       background-color: rgba(255, 255, 255, 0.9);
@@ -64,13 +92,16 @@
 </head>
 <body>
   <div id="map"></div>
-  <select id="collegeSelect">
-    <option value="">Select College ID</option>
-  </select>
-  <select id="modeSelect">
-    <option value="car">By Car</option>
-    <option value="walking">Walking</option>
-  </select>
+  <div id="travelModeContainer">
+    <div id="walkingMode" class="travelMode active" data-mode="walking">
+      <img src="https://image.flaticon.com/icons/svg/25/25694.svg" alt="Walking">
+      <span>Walking</span>
+    </div>
+    <div id="carMode" class="travelMode" data-mode="car">
+      <img src="https://image.flaticon.com/icons/svg/63/63380.svg" alt="Car">
+      <span>By Car</span>
+    </div>
+  </div>
   <button id="locateButton">Take me to my Destination</button>
   <div id="directions"></div>
   <script src="https://unpkg.com/leaflet@1.6.0/dist/leaflet.js"></script>
@@ -116,6 +147,13 @@
     var selectedCollege = null;
     var routingControl = null; // To keep track of the routing control
     var selectedMarker = null; // To keep track of the selected college marker
+    var travelMode = 'walking';
+
+    $('.travelMode').click(function() {
+      $('.travelMode').removeClass('active');
+      $(this).addClass('active');
+      travelMode = $(this).data('mode');
+    });
 
     $('#collegeSelect').change(function() {
       var selectedId = $(this).val();
@@ -200,7 +238,6 @@
         }
 
         // Determine the travel mode
-        var travelMode = $('#modeSelect').val();
         var routerOptions = {
           profile: travelMode === 'walking' ? 'mapbox/walking' : 'mapbox/driving'
         };
