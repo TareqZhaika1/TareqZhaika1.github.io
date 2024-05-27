@@ -153,12 +153,6 @@
       if (selectedCollege) {
         var destination = L.latLng(selectedCollege.geometry.coordinates[1], selectedCollege.geometry.coordinates[0]);
         
-        // Calculate bounds that include both user's location and destination
-        var bounds = L.latLngBounds([myLocation, destination]);
-        
-        // Fit the map to the calculated bounds
-        map.fitBounds(bounds);
-        
         // Remove previous routing control if exists
         if (routingControl !== null) {
           routingControl.removeFrom(map);
@@ -171,6 +165,10 @@
             destination
           ]
         }).addTo(map);
+
+        // Fit the map to the calculated bounds
+        var bounds = L.latLngBounds([myLocation, destination]);
+        map.fitBounds(bounds);
       }
     });
   </script>
