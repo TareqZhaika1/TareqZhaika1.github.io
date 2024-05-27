@@ -157,7 +157,7 @@
         const step = steps[i];
         const stepElement = document.createElement('div');
         stepElement.className = 'direction-step';
-        stepElement.innerText = step.instruction.text;
+        stepElement.innerText = step.text; // Updated to step.text instead of step.instruction.text
         directionsContainer.appendChild(stepElement);
       }
     }
