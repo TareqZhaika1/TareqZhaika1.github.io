@@ -198,6 +198,9 @@
         "Head northwest": "اتجه شمال غرب",
         "Turn left": "انعطف يسارًا",
         "Turn right": "انعطف يمينًا",
+        "Continue straight": "استمر مباشرة",
+        "Enter the roundabout": "ادخل الدوار",
+        "Take the exit": "خذ المخرج",
         // Add more translations as needed
       };
       return translations[direction] || direction;
@@ -235,7 +238,7 @@
     map.on('locationfound', function(e) {
       var myLocation = e.latlng;
       if (selectedCollege) {
-        var destination = L.latLng(selectedCollege.geometry.coordinates[1], selectedCollege.geometry.coordinates[0]);
+        var destination = L.L.latLng(selectedCollege.geometry.coordinates[1], selectedCollege.geometry.coordinates[0]);
 
         // Remove previous routing control if it exists
         if (routingControl !== null) {
