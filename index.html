@@ -76,6 +76,7 @@
   <script src="https://unpkg.com/leaflet@1.6.0/dist/leaflet.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-routing-machine/3.2.12/leaflet-routing-machine.js"></script>
+  <script src="https://unpkg.com/@mapbox/polyline@1.0.0/src/polyline.js"></script>
   <script>
     const mapOptions = {
       zoomSnap: 0.5,
@@ -200,7 +201,9 @@
 
         // Determine the travel mode
         var travelMode = $('#modeSelect').val();
-        var travelProfile = travelMode === 'walking' ? 'foot' : 'car';
+        var routerOptions = {
+          profile: travelMode === 'walking' ? 'mapbox/walking' : 'mapbox/driving'
+        };
 
         // Add new routing control with draggable waypoints
         routingControl = L.Routing.control({
@@ -208,9 +211,7 @@
             L.Routing.waypoint(myLocation, {draggable: true}),
             L.Routing.waypoint(destination, {draggable: true})
           ],
-          router: L.Routing.mapbox('YOUR_MAPBOX_ACCESS_TOKEN', {
-            profile: travelProfile
-          }),
+          router: L.Routing.mapbox('pk.eyJ1IjoidGFyZXF6aGFpa2EiLCJhIjoiY2x3cDZ4b2VnMWk0dTJxczFmdXE0Y3MwcCJ9.yWtxunGkYaYZDtvjtAt-ww', routerOptions),
           createMarker: function(i, waypoint) {
             return L.marker(waypoint.latLng, {
               draggable: true,
