@@ -158,12 +158,15 @@
 
       const summary = route.summary;
       const totalDistance = summary.totalDistance / 1000; // convert to km
-      const totalTime = Math.round(summary.totalTime / 60); // convert to minutes
+      const totalMinutes = Math.round(summary.totalTime / 60); // convert to minutes
+      const totalHours = Math.floor(totalMinutes / 60); // calculate hours
+      const remainingMinutes = totalMinutes % 60; // calculate remaining minutes
+      const totalTime = totalHours > 0 ? `${totalHours} hr ${remainingMinutes} min` : `${totalMinutes} min`; // display in hours and minutes if hours > 0
 
       // Add summary (distance and time)
       const summaryElement = document.createElement('div');
       summaryElement.className = 'summary';
-      summaryElement.innerText = `Distance: ${totalDistance.toFixed(2)} km, Time: ${totalTime} min`;
+      summaryElement.innerText = `Distance: ${totalDistance.toFixed(2)} km, Time: ${totalTime}`;
       directionsContainer.appendChild(summaryElement);
 
       // Show only the next 3 steps
