@@ -142,6 +142,10 @@
     });
 
     $('#locateButton').click(function() {
+      if (!selectedCollege) {
+        alert("Please select a college first.");
+        return;
+      }
       map.locate({setView: false, maxZoom: 16}); // Set setView to false
     });
 
@@ -167,6 +171,10 @@
         var bounds = L.latLngBounds([myLocation, destination]);
         map.fitBounds(bounds);
       }
+    });
+
+    map.on('locationerror', function(e) {
+      alert("Location access denied.");
     });
   </script>
 </body>
