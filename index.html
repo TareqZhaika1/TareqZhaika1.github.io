@@ -163,11 +163,11 @@
           routingControl.remove();
         }
 
-        // Add new routing control
+        // Add new routing control with non-draggable waypoints
         routingControl = L.Routing.control({
           waypoints: [
-            myLocation,
-            destination
+            L.Routing.waypoint(myLocation, {draggable: false}),
+            L.Routing.waypoint(destination, {draggable: false})
           ]
         }).addTo(map);
 
