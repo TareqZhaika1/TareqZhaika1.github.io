@@ -78,28 +78,25 @@
       font-weight: bold;
       margin-bottom: 10px;
     }
-    #selectContainer {
+    #selectDestination, #selectID {
       position: absolute;
       top: 10px;
       right: 20px;
       z-index: 1000;
-      display: flex;
-      gap: 5px;
+      margin-left: 10px;
     }
   </style>
 </head>
 <body>
   <div id="map"></div>
-  <div id="selectContainer">
-    <select id="fileSelect">
-      <option value="">Select your Destination</option>
-      <option value="colleges_edit.json">Colleges</option>
-      <option value="caf.json">Cafeterias</option>
-    </select>
-    <select id="idSelect" style="display:none;">
-      <option value="">Select ID</option>
-    </select>
-  </div>
+  <select id="selectDestination">
+    <option value="">Select your Destination</option>
+    <option value="colleges">Colleges</option>
+    <option value="cafes">Cafeterias</option>
+  </select>
+  <select id="selectID" style="display:none; margin-left: 5px;">
+    <option value="">Select ID</option>
+  </select>
   <div id="travelModeContainer">
     <div id="walkingMode" class="travelMode active" data-mode="walking">
       <img src="https://img.icons8.com/ios-filled/50/000000/walking.png" alt="Walking">
@@ -128,11 +125,10 @@
     }).addTo(map);
 
     var collegeMarkers = {};
-    var collegesData;
     var cafeMarkers = {};
-    var cafesData;
+    var collegesData, cafesData;
 
-    // Custom icons
+    // Custom icons for colleges and cafes
     var collegeIcon = L.divIcon({
       html: '<div style="background-color: pink; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; color: white;"><i class="fas fa-book-open"></i></div>',
       className: '',
@@ -142,95 +138,111 @@
     });
 
     var cafeIcon = L.divIcon({
-      html: '<div style="background-color: #FFD700; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; color: white;"><i class="fas fa-utensils"></i></div>',
+      html: '<div style="background-color: gold; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; color: white;"><i class="fas fa-utensils"></i></div>',
       className: '',
       iconSize: [32, 32],
       iconAnchor: [16, 32],
       popupAnchor: [0, -32]
     });
 
-    function loadFileData(url, icon, markerDict, dataVar) {
-      $.getJSON(url, function(data) {
-        dataVar = data;
-        data.features.forEach(function(feature) {
+    function loadColleges() {
+      $.getJSON("colleges_edit.json", function(Colleges) {
+        collegesData = Colleges;
+        Colleges.features.forEach(function(feature) {
           var latlng = L.latLng(feature.geometry.coordinates[1], feature.geometry.coordinates[0]);
-          var marker = L.marker(latlng, { icon: icon }).bindPopup("ID: " + feature.properties.college_ID || feature.properties.Cafe_ID);
-          markerDict[feature.properties.college_ID || feature.properties.Cafe_ID] = marker;
-
-          // Add options to the dropdown menu
-          $('#idSelect').append(new Option(feature.properties.college_ID || feature.properties.Cafe_ID, feature.properties.college_ID || feature.properties.Cafe_ID));
+          var marker = L.marker(latlng, { icon: collegeIcon }).bindPopup("College ID: " + feature.properties.college_ID);
+          collegeMarkers[feature.properties.college_ID] = marker;
         });
       }).fail(function(jqxhr, textStatus, error) {
-        console.error("Error loading " + url + ": ", textStatus, error);
+        console.error("Error loading colleges_edit.json: ", textStatus, error);
       });
     }
 
-    $('#fileSelect').change(function() {
-      var selectedFile = $(this).val();
-      $('#idSelect').empty().append(new Option("Select ID", ""));
-      if (!selectedFile) {
-        $('#idSelect').hide();
-        return;
-      }
-      $('#idSelect').show();
+    function loadCafes() {
+      $.getJSON("caf.json", function(Cafes) {
+        cafesData = Cafes;
+        Cafes.features.forEach(function(feature) {
+          var latlng = L.latLng(feature.geometry.coordinates[1], feature.geometry.coordinates[0]);
+          var marker = L.marker(latlng, { icon: cafeIcon }).bindPopup("Cafe ID: " + feature.properties.Cafe_ID);
+          cafeMarkers[feature.properties.Cafe_ID] = marker;
+        });
+      }).fail(function(jqxhr, textStatus, error) {
+        console.error("Error loading caf.json: ", textStatus, error);
+      });
+    }
 
-      if (selectedFile === "colleges_edit.json") {
-        loadFileData("colleges_edit.json", collegeIcon, collegeMarkers, collegesData);
-      } else if (selectedFile === "caf.json") {
-        loadFileData("caf.json", cafeIcon, cafeMarkers, cafesData);
-      }
-    });
+    loadColleges();
+    loadCafes();
 
-    var selectedCollege = null;
-    var routingControl = null; // To keep track of the routing control
-    var selectedMarker = null; // To keep track of the selected college marker
+    var selectedFeature = null;
+    var routingControl = null;
+    var selectedMarker = null;
     var travelMode = 'walking';
 
     $('.travelMode').click(function() {
       $('.travelMode').removeClass('active');
       $(this).addClass('active');
       travelMode = $(this).data('mode');
-      if (selectedCollege) {
+      if (selectedFeature) {
         map.locate({setView: false, maxZoom: 16}); // Set setView to false and trigger route calculation
       }
     });
 
-    $('#idSelect').change(function() {
+    $('#selectDestination').change(function() {
+      var selectedCategory = $(this).val();
+      $('#selectID').empty().append(new Option("Select ID", "")).hide();
+
+      if (selectedCategory === "colleges") {
+        collegesData.features.forEach(function(feature) {
+          $('#selectID').append(new Option(feature.properties.college_ID, feature.properties.college_ID));
+        });
+      } else if (selectedCategory === "cafes") {
+        cafesData.features.forEach(function(feature) {
+          $('#selectID').append(new Option(feature.properties.Cafe_ID, feature.properties.Cafe_ID));
+        });
+      }
+
+      $('#selectID').show();
+
+      // Remove selected marker and routing control if exist
+      if (selectedMarker !== null) {
+        selectedMarker.remove();
+        selectedMarker = null;
+      }
+      if (routingControl !== null) {
+        routingControl.getPlan().setWaypoints([]);
+        routingControl.remove();
+        routingControl = null;
+      }
+
+      // Hide directions container
+      document.getElementById('directions').style.display = 'none';
+    });
+
+    $('#selectID').change(function() {
       var selectedId = $(this).val();
       if (!selectedId) return;
 
-      var selectedFeature = (collegesData && collegesData.features.find(function(feature) {
-        return feature.properties.college_ID == selectedId;
-      })) || (cafesData && cafesData.features.find(function(feature) {
-        return feature.properties.Cafe_ID == selectedId;
-      }));
+      var selectedCategory = $('#selectDestination').val();
+
+      if (selectedCategory === "colleges") {
+        selectedFeature = collegesData.features.find(function(feature) {
+          return feature.properties.college_ID == selectedId;
+        });
+        selectedMarker = collegeMarkers[selectedId];
+      } else if (selectedCategory === "cafes") {
+        selectedFeature = cafesData.features.find(function(feature) {
+          return feature.properties.Cafe_ID == selectedId;
+        });
+        selectedMarker = cafeMarkers[selectedId];
+      }
 
       if (selectedFeature) {
         var latlng = L.latLng(selectedFeature.geometry.coordinates[1], selectedFeature.geometry.coordinates[0]);
-
-        // Remove the previous selected marker and routing control if they exist
-        if (selectedMarker !== null) {
-          selectedMarker.remove();
-          selectedMarker = null;
-        }
-        if (routingControl !== null) {
-          routingControl.getPlan().setWaypoints([]);
-          routingControl.remove();
-          routingControl = null;
-        }
-
-        // Ensure the selected marker is added to the map before setting the view
-        selectedMarker = (collegeMarkers[selectedId] ? collegeMarkers[selectedId] : cafeMarkers[selectedId]);
-        selectedMarker.addTo(map);
-
-        // Center the map on the selected marker
         map.flyTo(latlng, 18);
-        selectedMarker.openPopup();
+        selectedMarker.addTo(map).openPopup();
 
-        // Set the selected college or cafe
-        selectedCollege = selectedFeature;
-
-        // Hide the directions container initially
+        // Hide directions container
         document.getElementById('directions').style.display = 'none';
       }
     });
@@ -265,8 +277,8 @@
 
     map.on('locationfound', function(e) {
       var myLocation = e.latlng;
-      if (selectedCollege) {
-        var destination = L.latLng(selectedCollege.geometry.coordinates[1], selectedCollege.geometry.coordinates[0]);
+      if (selectedFeature) {
+        var destination = L.latLng(selectedFeature.geometry.coordinates[1], selectedFeature.geometry.coordinates[0]);
 
         // Remove previous routing control if it exists
         if (routingControl !== null) {
