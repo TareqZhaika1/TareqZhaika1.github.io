@@ -30,33 +30,20 @@
       left: 20px;
       z-index: 1000;
     }
-    .leaflet-routing-container {
-        background-color: transparent;
-        color: red;
-        font-size: 12px;
-        position: relative;
-        right: 20px;
-        transform: translate(1%, 80%);
+    #directions {
+      position: absolute;
+      top: 100px;
+      left: 20px;
+      z-index: 1000;
+      background-color: rgba(255, 255, 255, 0.8);
+      padding: 10px;
+      border-radius: 8px;
+      max-height: 200px;
+      overflow-y: auto;
+      width: 300px;
     }
-    @media (min-width: 769px) {
-      #collegeSelect {
-        left: auto;
-        right: 20px;
-      }
-      #locateButton {
-        left: auto;
-        right: 20px;
-        top: 60px;
-      }
-    }
-    @media (max-width: 768px) {
-      #collegeSelect {
-        left: 50px;
-      }
-      #locateButton {
-        left: 50px;
-        top: 80px;
-      }
+    .direction-step {
+      margin: 5px 0;
     }
   </style>
 </head>
@@ -66,6 +53,7 @@
     <option value="">Select College ID</option>
   </select>
   <button id="locateButton">Take me to my Destination</button>
+  <div id="directions"></div>
   <script src="https://unpkg.com/leaflet@1.6.0/dist/leaflet.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-routing-machine/3.2.12/leaflet-routing-machine.js"></script>
@@ -152,6 +140,20 @@
       map.locate({setView: false, maxZoom: 16}); // Set setView to false
     });
 
+    function updateDirections(steps) {
+      const directionsContainer = document.getElementById('directions');
+      directionsContainer.innerHTML = ''; // Clear previous directions
+
+      // Show only the next 3 steps
+      for (let i = 0; i < Math.min(steps.length, 3); i++) {
+        const step = steps[i];
+        const stepElement = document.createElement('div');
+        stepElement.className = 'direction-step';
+        stepElement.innerText = step.instruction.text;
+        directionsContainer.appendChild(stepElement);
+      }
+    }
+
     map.on('locationfound', function(e) {
       var myLocation = e.latlng;
       if (selectedCollege) {
@@ -181,6 +183,17 @@
                 shadowSize: [41, 41]
               })
             });
+          },
+          routeWhileDragging: false,
+          showAlternatives: false,
+          lineOptions: {
+            addWaypoints: false // Prevent adding waypoints by dragging
+          }
+        }).on('routesfound', function(e) {
+          // Update directions whenever routes are found
+          const routes = e.routes;
+          if (routes.length > 0) {
+            updateDirections(routes[0].instructions);
           }
         }).addTo(map);
 
