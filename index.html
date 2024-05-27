@@ -77,12 +77,18 @@
       font-weight: bold;
       margin-bottom: 10px;
     }
-    #fileSelect, #idSelect {
+    #fileSelect {
+      position: absolute;
+      top: 10px;
+      right: 120px;
+      z-index: 1000;
+    }
+    #idSelect {
       position: absolute;
       top: 10px;
       right: 20px;
       z-index: 1000;
-      margin-left: 10px;
+      display: none; /* Hide initially */
     }
   </style>
 </head>
@@ -91,9 +97,9 @@
   <select id="fileSelect">
     <option value="">Select your Destination</option>
     <option value="colleges_edit.json">Colleges</option>
-    <option value="caf.json">Cafes</option>
+    <option value="caf.json">Cafeterias</option>
   </select>
-  <select id="idSelect" style="display: none;">
+  <select id="idSelect">
     <option value="">Select ID</option>
   </select>
   <div id="travelModeContainer">
@@ -124,82 +130,90 @@
     }).addTo(map);
 
     var collegeMarkers = {};
-    var cafeMarkers = {};
-    var selectedFile = '';
+    var cafesMarkers = {};
     var collegesData;
     var cafesData;
 
-    function loadFileData(file) {
-      if (file === 'colleges_edit.json') {
-        if (!collegesData) {
-          $.getJSON("colleges_edit.json", function(Colleges) {
-            collegesData = Colleges;
-            populateDropdown(collegesData, 'college_ID', collegeMarkers, 'pink', 'book');
-          }).fail(function(jqxhr, textStatus, error) {
-            console.error("Error loading colleges_edit.json: ", textStatus, error);
-          });
-        } else {
-          populateDropdown(collegesData, 'college_ID', collegeMarkers, 'pink', 'book');
-        }
-      } else if (file === 'caf.json') {
-        if (!cafesData) {
-          $.getJSON("caf.json", function(Cafes) {
-            cafesData = Cafes;
-            populateDropdown(cafesData, 'Cafe_ID', cafeMarkers, 'green', 'cutlery');
-          }).fail(function(jqxhr, textStatus, error) {
-            console.error("Error loading caf.json: ", textStatus, error);
-          });
-        } else {
-          populateDropdown(cafesData, 'Cafe_ID', cafeMarkers, 'green', 'cutlery');
-        }
-      }
-    }
-
-    function populateDropdown(data, idProperty, markers, circleColor, iconName) {
-      $('#idSelect').empty().append(new Option('Select ID', ''));
+    $.getJSON("colleges_edit.json", function(data) {
+      collegesData = data;
       data.features.forEach(function(feature) {
         var latlng = L.latLng(feature.geometry.coordinates[1], feature.geometry.coordinates[0]);
         var marker = L.circleMarker(latlng, {
           radius: 8,
-          fillColor: circleColor,
-          color: circleColor,
+          fillColor: "#f28a8a",
+          color: "#f28a8a",
           weight: 1,
           opacity: 1,
           fillOpacity: 0.8
-        }).bindPopup(idProperty + ": " + feature.properties[idProperty]);
-        markers[feature.properties[idProperty]] = marker;
-
-        $('#idSelect').append(new Option(feature.properties[idProperty], feature.properties[idProperty]));
+        }).bindPopup("College ID: " + feature.properties.college_ID);
+        collegeMarkers[feature.properties.college_ID] = marker;
       });
-      $('#idSelect').show();
-    }
-
-    $('#fileSelect').change(function() {
-      selectedFile = $(this).val();
-      if (selectedFile) {
-        loadFileData(selectedFile);
-      }
+    }).fail(function(jqxhr, textStatus, error) {
+      console.error("Error loading colleges_edit.json: ", textStatus, error);
     });
 
-    var selectedMarker = null;
-    var routingControl = null;
+    $.getJSON("caf.json", function(data) {
+      cafesData = data;
+      data.features.forEach(function(feature) {
+        var latlng = L.latLng(feature.geometry.coordinates[1], feature.geometry.coordinates[0]);
+        var marker = L.circleMarker(latlng, {
+          radius: 8,
+          fillColor: "#f28a8a",
+          color: "#f28a8a",
+          weight: 1,
+          opacity: 1,
+          fillOpacity: 0.8
+        }).bindPopup("Cafe ID: " + feature.properties.Cafe_ID);
+        cafesMarkers[feature.properties.Cafe_ID] = marker;
+      });
+    }).fail(function(jqxhr, textStatus, error) {
+      console.error("Error loading caf.json: ", textStatus, error);
+    });
+
+    var selectedFile = null;
+    var selectedID = null;
+    var routingControl = null; // To keep track of the routing control
+    var selectedMarker = null; // To keep track of the selected marker
     var travelMode = 'walking';
 
     $('.travelMode').click(function() {
       $('.travelMode').removeClass('active');
       $(this).addClass('active');
       travelMode = $(this).data('mode');
-      if (selectedMarker) {
-        map.locate({setView: false, maxZoom: 16});
+      if (selectedID) {
+        map.locate({setView: false, maxZoom: 16}); // Set setView to false and trigger route calculation
       }
+    });
+
+    $('#fileSelect').change(function() {
+      var selectedValue = $(this).val();
+      selectedFile = selectedValue;
+      $('#idSelect').empty().append(new Option('Select ID', ''));
+      if (selectedValue === 'colleges_edit.json') {
+        for (var id in collegeMarkers) {
+          $('#idSelect').append(new Option(id, id));
+        }
+      } else if (selectedValue === 'caf.json') {
+        for (var id in cafesMarkers) {
+          $('#idSelect').append(new Option(id, id));
+        }
+      }
+      $('#idSelect').show();
     });
 
     $('#idSelect').change(function() {
       var selectedId = $(this).val();
-      if (!selectedId) return;
+      selectedID = selectedId;
+      if (!selectedId) {
+        if (selectedMarker !== null) {
+          selectedMarker.remove();
+          selectedMarker = null;
+        }
+        $('#idSelect').hide();
+        return;
+      }
 
       var data = selectedFile === 'colleges_edit.json' ? collegesData : cafesData;
-      var markers = selectedFile === 'colleges_edit.json' ? collegeMarkers : cafeMarkers;
       var selectedFeature = data.features.find(function(feature) {
         return feature.properties[selectedFile === 'colleges_edit.json' ? 'college_ID' : 'Cafe_ID'] == selectedId;
       });
@@ -217,26 +231,25 @@
           routingControl = null;
         }
 
-        selectedMarker = markers[selectedId];
+        selectedMarker = selectedFile === 'colleges_edit.json' ? collegeMarkers[selectedId] : cafesMarkers[selectedId];
         selectedMarker.addTo(map);
-
         map.flyTo(latlng, 18);
         selectedMarker.openPopup();
 
-        document.getElementById('directions').style.display = 'none';
+        $('#directions').hide();
       }
     });
 
     function updateDirections(route) {
       const directionsContainer = document.getElementById('directions');
-      directionsContainer.innerHTML = '';
+      directionsContainer.innerHTML = ''; // Clear previous directions
 
       const summary = route.summary;
       const totalDistance = summary.totalDistance < 1000 ? `${summary.totalDistance.toFixed(0)} m` : `${(summary.totalDistance / 1000).toFixed(2)} km`;
-      const totalMinutes = Math.round(summary.totalTime / 60);
-      const totalHours = Math.floor(totalMinutes / 60);
-      const remainingMinutes = totalMinutes % 60;
-      const totalTime = totalHours > 0 ? `${totalHours} hr ${remainingMinutes} min` : `${totalMinutes} min`;
+      const totalMinutes = Math.round(summary.totalTime / 60); // convert to minutes
+      const totalHours = Math.floor(totalMinutes / 60); // calculate hours
+      const remainingMinutes = totalMinutes % 60; // calculate remaining minutes
+      const totalTime = totalHours > 0 ? `${totalHours} hr ${remainingMinutes} min` : `${totalMinutes} min`; // display in hours and minutes if hours > 0
 
       const summaryElement = document.createElement('div');
       summaryElement.className = 'summary';
@@ -248,72 +261,69 @@
         const stepDistance = step.distance < 1000 ? `${step.distance.toFixed(0)} m` : `${(step.distance / 1000).toFixed(2)} km`;
         const stepElement = document.createElement('div');
         stepElement.className = 'direction-step';
-        stepElement.innerText = `${i + 1}. ${step.text} (${stepDistance})`;
+        stepElement.innerText = `${i + 1}. ${step.text} (${stepDistance})`; // Added numbering
         directionsContainer.appendChild(stepElement);
       }
     }
 
     map.on('locationfound', function(e) {
       var myLocation = e.latlng;
-      var data = selectedFile === 'colleges_edit.json' ? collegesData : cafesData;
-      if (data) {
-        var selectedId = $('#idSelect').val();
+      if (selectedID) {
+        var data = selectedFile === 'colleges_edit.json' ? collegesData : cafesData;
         var selectedFeature = data.features.find(function(feature) {
-          return feature.properties[selectedFile === 'colleges_edit.json' ? 'college_ID' : 'Cafe_ID'] == selectedId;
+          return feature.properties[selectedFile === 'colleges_edit.json' ? 'college_ID' : 'Cafe_ID'] == selectedID;
         });
-        if (selectedFeature) {
-          var destination = L.latLng(selectedFeature.geometry.coordinates[1], selectedFeature.geometry.coordinates[0]);
+        var destination = L.latLng(selectedFeature.geometry.coordinates[1], selectedFeature.geometry.coordinates[0]);
 
-          if (routingControl !== null) {
-            routingControl.getPlan().setWaypoints([]);
-            routingControl.remove();
-          }
-
-          var routerOptions = {
-            profile: travelMode === 'walking' ? 'mapbox/walking' : 'mapbox/driving'
-          };
-
-          routingControl = L.Routing.control({
-            waypoints: [
-              L.Routing.waypoint(myLocation, {draggable: true}),
-              L.Routing.waypoint(destination, {draggable: true})
-            ],
-            router: L.Routing.mapbox('pk.eyJ1IjoidGFyZXF6aGFpa2EiLCJhIjoiY2x3cDZ4b2VnMWk0dTJxczFmdXE0Y3MwcCJ9.yWtxunGkYaYZDtvjtAt-ww', routerOptions),
-            createMarker: function(i, waypoint) {
-              return L.marker(waypoint.latLng, {
-                draggable: true,
-                icon: L.icon({
-                  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.6.0/images/marker-icon.png',
-                  iconSize: [25, 41],
-                  iconAnchor: [12, 41],
-                  popupAnchor: [1, -34],
-                  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.6.0/images/marker-shadow.png',
-                  shadowSize: [41, 41]
-                })
-              });
-            },
-            routeWhileDragging: true,
-            showAlternatives: false,
-            lineOptions: {
-              addWaypoints: true
-            },
-            itinerary: {
-              containerClassName: 'custom-itinerary',
-              show: false
-            }
-          }).on('routesfound', function(e) {
-            const routes = e.routes;
-            if (routes.length > 0) {
-              updateDirections(routes[0]);
-            }
-          }).addTo(map);
-
-          document.querySelector('.leaflet-routing-container').style.display = 'none';
-          document.getElementById('directions').style.display = 'block';
-
-          var bounds = L.latLngBounds([myLocation, destination]);
-          map.fitBounds(bounds);
+        if (routingControl !== null) {
+          routingControl.getPlan().setWaypoints([]);
+          routingControl.remove();
         }
+
+        var routerOptions = {
+          profile: travelMode === 'walking' ? 'mapbox/walking' : 'mapbox/driving'
+        };
+
+        routingControl = L.Routing.control({
+          waypoints: [
+            L.Routing.waypoint(myLocation, {draggable: true}),
+            L.Routing.waypoint(destination, {draggable: true})
+          ],
+          router: L.Routing.mapbox('pk.eyJ1IjoidGFyZXF6aGFpa2EiLCJhIjoiY2x3cDZ4b2VnMWk0dTJxczFmdXE0Y3MwcCJ9.yWtxunGkYaYZDtvjtAt-ww', routerOptions),
+          createMarker: function(i, waypoint) {
+            return L.marker(waypoint.latLng, {
+              draggable: true,
+              icon: L.icon({
+                iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.6.0/images/marker-icon.png',
+                iconSize: [25, 41],
+                iconAnchor: [12, 41],
+                popupAnchor: [1, -34],
+                shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.6.0/images/marker-shadow.png',
+                shadowSize: [41, 41]
+              })
+            });
+          },
+          routeWhileDragging: true,
+          showAlternatives: false,
+          lineOptions: {
+            addWaypoints: true // Allow adding waypoints by dragging
+          },
+          // Remove the default itinerary
+          itinerary: {
+            containerClassName: 'custom-itinerary',
+            show: false
+          }
+        }).on('routesfound', function(e) {
+          const routes = e.routes;
+          if (routes.length > 0) {
+            updateDirections(routes[0]);
+          }
+        }).addTo(map);
+
+        document.querySelector('.leaflet-routing-container').style.display = 'none';
+        document.getElementById('directions').style.display = 'block';
+        var bounds = L.latLngBounds([myLocation, destination]);
+        map.fitBounds(bounds);
       }
     });
 
