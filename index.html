@@ -21,7 +21,7 @@
     }
     #travelModeContainer {
       position: absolute;
-      top: 10px;
+      top: 50px;
       right: 20px;
       z-index: 1000;
       background: white;
@@ -51,7 +51,7 @@
     }
     #locateButton {
       position: absolute;
-      top: 60px;
+      top: 100px;
       right: 20px;
       z-index: 1000;
       background: white;
@@ -63,7 +63,7 @@
     }
     #directions {
       position: absolute;
-      top: 120px;
+      top: 150px;
       right: 20px;
       z-index: 1000;
       background-color: rgba(255, 255, 255, 0.9);
@@ -72,6 +72,7 @@
       max-height: 300px;
       overflow-y: auto;
       width: 300px;
+      display: none; /* Hide initially */
     }
     .direction-step {
       margin: 5px 0;
@@ -88,10 +89,19 @@
       font-weight: bold;
       margin-bottom: 10px;
     }
+    #collegeSelect {
+      position: absolute;
+      top: 10px;
+      right: 20px;
+      z-index: 1000;
+    }
   </style>
 </head>
 <body>
   <div id="map"></div>
+  <select id="collegeSelect">
+    <option value="">Select College ID</option>
+  </select>
   <div id="travelModeContainer">
     <div id="walkingMode" class="travelMode active" data-mode="walking">
       <img src="https://img.icons8.com/ios-filled/50/000000/walking.png" alt="Walking">
@@ -187,6 +197,9 @@
 
         // Set the selected college
         selectedCollege = selectedFeature;
+
+        // Show the directions container
+        document.getElementById('directions').style.display = 'block';
       }
     });
 
