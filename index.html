@@ -120,18 +120,19 @@
     var collegeMarkers = {};
     var collegesData;
 
+    // Custom icon for colleges
+    var collegeIcon = L.icon({
+      iconUrl: 'https://img.icons8.com/ios-filled/50/000000/school.png', // URL to a college-related icon
+      iconSize: [32, 32], // size of the icon
+      iconAnchor: [16, 32], // point of the icon which will correspond to marker's location
+      popupAnchor: [0, -32] // point from which the popup should open relative to the iconAnchor
+    });
+
     $.getJSON("colleges_edit.json", function(Colleges) {
       collegesData = Colleges;
       Colleges.features.forEach(function(feature) {
         var latlng = L.latLng(feature.geometry.coordinates[1], feature.geometry.coordinates[0]);
-        var marker = L.circleMarker(latlng, {
-          radius: 5,
-          fillColor: "blue",
-          color: "blue",
-          weight: 1,
-          opacity: 1,
-          fillOpacity: 0.8
-        }).bindPopup("College ID: " + feature.properties.college_ID);
+        var marker = L.marker(latlng, { icon: collegeIcon }).bindPopup("College ID: " + feature.properties.college_ID);
         collegeMarkers[feature.properties.college_ID] = marker;
 
         // Add options to the dropdown menu
@@ -193,6 +194,19 @@
       }
     });
 
+    function translateDirection(direction) {
+      const translations = {
+        "Head northwest": "اتجه شمال غرب",
+        "Turn left": "انعطف يسارًا",
+        "Turn right": "انعطف يمينًا",
+        "Continue straight": "استمر مباشرة",
+        "Enter the roundabout": "ادخل الدوار",
+        "Take the exit": "خذ المخرج",
+        // Add more translations as needed
+      };
+      return translations[direction] || direction;
+    }
+
     function updateDirections(route) {
       const directionsContainer = document.getElementById('directions');
       directionsContainer.innerHTML = ''; // Clear previous directions
@@ -213,10 +227,11 @@
       // Show only the next 3 steps
       for (let i = 0; i < Math.min(route.instructions.length, 3); i++) {
         const step = route.instructions[i];
+        const translatedStepText = translateDirection(step.text); // Translate the direction text
         const stepDistance = step.distance < 1000 ? `${step.distance.toFixed(0)} m` : `${(step.distance / 1000).toFixed(2)} km`; // Show distance in meters if less than 1000, otherwise in kilometers
         const stepElement = document.createElement('div');
         stepElement.className = 'direction-step';
-        stepElement.innerText = `${i + 1}. ${step.text} (${stepDistance})`; // Added numbering
+        stepElement.innerText = `${i + 1}. ${translatedStepText} (${stepDistance})`; // Added numbering
         directionsContainer.appendChild(stepElement);
       }
     }
