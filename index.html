@@ -18,18 +18,18 @@
       top: 0;
       bottom: 0;
     }
-    #collegeSelect {
+    #controls {
       position: absolute;
       top: 10px;
       left: 20px;
       z-index: 1000;
+    }
+    #collegeSelect {
       max-width: 200px;
     }
     #navigateButton {
-      position: absolute;
-      top: 50px;
-      left: 20px;
-      z-index: 1000;
+      margin-top: 10px;
+      display: block;
     }
     .leaflet-routing-container {
       background-color: transparent; /* No background color */
@@ -40,33 +40,27 @@
       transform: translate(1%, 80%); /* Move the container 80% of its own height to the bottom */
     }
     @media (min-width: 769px) {
-      #collegeSelect {
+      #controls {
         left: auto;
         right: 20px;
-      }
-      #navigateButton {
-        left: auto;
-        right: 20px;
-        top: 80px;
       }
     }
     @media (max-width: 768px) {
-      #collegeSelect {
+      #controls {
         left: 50px;
-      }
-      #navigateButton {
-        left: 50px;
-        top: 100px;
       }
     }
   </style>
 </head>
 <body>
   <div id="map"></div>
-  <select id="collegeSelect">
-    <option value="">Select a College ID</option>
-  </select>
-  <button id="navigateButton">Take me to my Destination</button>
+  <div id="controls">
+    <div>Select a college ID</div>
+    <select id="collegeSelect">
+      <option value="">Select ID</option>
+    </select>
+    <button id="navigateButton">Take me to my Destination</button>
+  </div>
   <script src="https://unpkg.com/leaflet@1.6.0/dist/leaflet.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-routing-machine/3.2.12/leaflet-routing-machine.js"></script>
@@ -105,7 +99,7 @@
       }).addTo(map);
 
       Colleges.features.forEach(function(feature) {
-        $('#collegeSelect').append(new Option("College ID: " + feature.properties.college_ID, feature.properties.college_ID));
+        $('#collegeSelect').append(new Option(feature.properties.college_ID, feature.properties.college_ID));
       });
     }).fail(function(jqxhr, textStatus, error) {
       console.error("Error loading colleges_edit.json: ", textStatus, error);
