@@ -138,13 +138,21 @@
     });
 
     $('#locateButton').click(function() {
-      map.locate({setView: true, maxZoom: 16});
+      map.locate({setView: false, maxZoom: 16}); // Set setView to false
     });
 
     map.on('locationfound', function(e) {
       var myLocation = e.latlng;
       if (selectedCollege) {
         var destination = L.latLng(selectedCollege.geometry.coordinates[1], selectedCollege.geometry.coordinates[0]);
+        
+        // Calculate bounds that include both user's location and destination
+        var bounds = L.latLngBounds([myLocation, destination]);
+        
+        // Fit the map to the calculated bounds
+        map.fitBounds(bounds);
+        
+        // Add routing control
         L.Routing.control({
           waypoints: [
             myLocation,
