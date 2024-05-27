@@ -220,7 +220,7 @@
         }
 
         // Ensure the selected marker is added to the map before setting the view
-        selectedMarker = (collegesData ? collegeMarkers[selectedId] : cafeMarkers[selectedId]);
+        selectedMarker = (collegeMarkers[selectedId] ? collegeMarkers[selectedId] : cafeMarkers[selectedId]);
         selectedMarker.addTo(map);
 
         // Center the map on the selected marker
