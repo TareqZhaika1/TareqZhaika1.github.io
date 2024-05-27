@@ -18,15 +18,18 @@
       top: 0;
       bottom: 0;
     }
-    #collegeSelect {
+    #collegeSelect, #modeSelect {
       position: absolute;
       top: 10px;
       right: 20px;
       z-index: 1000;
     }
+    #modeSelect {
+      top: 40px;
+    }
     #locateButton {
       position: absolute;
-      top: 50px;
+      top: 70px;
       right: 20px;
       z-index: 1000;
     }
@@ -63,6 +66,10 @@
   <div id="map"></div>
   <select id="collegeSelect">
     <option value="">Select College ID</option>
+  </select>
+  <select id="modeSelect">
+    <option value="car">By Car</option>
+    <option value="walking">Walking</option>
   </select>
   <button id="locateButton">Take me to my Destination</button>
   <div id="directions"></div>
@@ -157,7 +164,7 @@
       directionsContainer.innerHTML = ''; // Clear previous directions
 
       const summary = route.summary;
-      const totalDistance = summary.totalDistance / 1000; // convert to km
+      const totalDistance = summary.totalDistance < 1000 ? `${summary.totalDistance.toFixed(0)} m` : `${(summary.totalDistance / 1000).toFixed(2)} km`;
       const totalMinutes = Math.round(summary.totalTime / 60); // convert to minutes
       const totalHours = Math.floor(totalMinutes / 60); // calculate hours
       const remainingMinutes = totalMinutes % 60; // calculate remaining minutes
@@ -166,7 +173,7 @@
       // Add summary (distance and time)
       const summaryElement = document.createElement('div');
       summaryElement.className = 'summary';
-      summaryElement.innerText = `Distance: ${totalDistance.toFixed(2)} km, Time: ${totalTime}`;
+      summaryElement.innerText = `Distance: ${totalDistance}, Time: ${totalTime}`;
       directionsContainer.appendChild(summaryElement);
 
       // Show only the next 3 steps
@@ -191,12 +198,19 @@
           routingControl.remove();
         }
 
+        // Determine the travel mode
+        var travelMode = $('#modeSelect').val();
+        var travelProfile = travelMode === 'walking' ? 'foot' : 'car';
+
         // Add new routing control with draggable waypoints
         routingControl = L.Routing.control({
           waypoints: [
             L.Routing.waypoint(myLocation, {draggable: true}),
             L.Routing.waypoint(destination, {draggable: true})
           ],
+          router: L.Routing.mapbox('YOUR_MAPBOX_ACCESS_TOKEN', {
+            profile: travelProfile
+          }),
           createMarker: function(i, waypoint) {
             return L.marker(waypoint.latLng, {
               draggable: true,
