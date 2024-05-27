@@ -122,8 +122,8 @@
         var selectedMarker = collegeMarkers[selectedId];
         selectedMarker.addTo(map);
         
-        // Center the map on the selected marker
-        map.setView(latlng, 18);
+        // Center the map on the selected marker with flyTo
+        map.flyTo(latlng, 18);
         selectedMarker.openPopup();
 
         // Hide all other markers
