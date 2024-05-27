@@ -175,7 +175,7 @@
         const stepDistance = step.distance < 1000 ? `${step.distance.toFixed(0)} m` : `${(step.distance / 1000).toFixed(2)} km`; // Show distance in meters if less than 1000, otherwise in kilometers
         const stepElement = document.createElement('div');
         stepElement.className = 'direction-step';
-        stepElement.innerText = `${step.text} (${stepDistance})`;
+        stepElement.innerText = `${i + 1}. ${step.text} (${stepDistance})`; // Added numbering
         directionsContainer.appendChild(stepElement);
       }
     }
