@@ -169,9 +169,10 @@
       // Show only the next 3 steps
       for (let i = 0; i < Math.min(route.instructions.length, 3); i++) {
         const step = route.instructions[i];
+        const stepDistance = step.distance < 1000 ? `${step.distance.toFixed(0)} m` : `${(step.distance / 1000).toFixed(2)} km`; // Show distance in meters if less than 1000, otherwise in kilometers
         const stepElement = document.createElement('div');
         stepElement.className = 'direction-step';
-        stepElement.innerText = `${step.text} (${(step.distance / 1000).toFixed(2)} km)`; // Show step distance
+        stepElement.innerText = `${step.text} (${stepDistance})`;
         directionsContainer.appendChild(stepElement);
       }
     }
@@ -223,6 +224,9 @@
             updateDirections(routes[0]);
           }
         }).addTo(map);
+
+        // Hide the default itinerary
+        document.querySelector('.leaflet-routing-container').style.display = 'none';
 
         // Fit the map to the calculated bounds
         var bounds = L.latLngBounds([myLocation, destination]);
