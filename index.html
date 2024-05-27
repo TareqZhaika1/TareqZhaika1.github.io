@@ -53,6 +53,10 @@
       left: 10px;
       z-index: 1000;
     }
+    .summary {
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
   </style>
 </head>
 <body>
@@ -148,20 +152,26 @@
       map.locate({setView: false, maxZoom: 16}); // Set setView to false
     });
 
-    function updateDirections(steps, distance, time) {
+    function updateDirections(route) {
       const directionsContainer = document.getElementById('directions');
       directionsContainer.innerHTML = ''; // Clear previous directions
 
-      const header = document.createElement('div');
-      header.innerHTML = `<strong>Distance:</strong> ${distance}, <strong>Time:</strong> ${time}`;
-      directionsContainer.appendChild(header);
+      const summary = route.summary;
+      const totalDistance = summary.totalDistance / 1000; // convert to km
+      const totalTime = Math.round(summary.totalTime / 60); // convert to minutes
+
+      // Add summary (distance and time)
+      const summaryElement = document.createElement('div');
+      summaryElement.className = 'summary';
+      summaryElement.innerText = `Distance: ${totalDistance.toFixed(2)} km, Time: ${totalTime} min`;
+      directionsContainer.appendChild(summaryElement);
 
       // Show only the next 3 steps
-      for (let i = 0; i < Math.min(steps.length, 3); i++) {
-        const step = steps[i];
+      for (let i = 0; i < Math.min(route.instructions.length, 3); i++) {
+        const step = route.instructions[i];
         const stepElement = document.createElement('div');
         stepElement.className = 'direction-step';
-        stepElement.innerText = step.text; // Updated to step.text instead of step.instruction.text
+        stepElement.innerText = `${step.text} (${(step.distance / 1000).toFixed(2)} km)`; // Show step distance
         directionsContainer.appendChild(stepElement);
       }
     }
@@ -200,13 +210,17 @@
           showAlternatives: false,
           lineOptions: {
             addWaypoints: true // Allow adding waypoints by dragging
+          },
+          // Remove the default itinerary
+          itinerary: {
+            containerClassName: 'custom-itinerary',
+            show: false
           }
         }).on('routesfound', function(e) {
           // Update directions whenever routes are found
           const routes = e.routes;
           if (routes.length > 0) {
-            const route = routes[0];
-            updateDirections(route.instructions, route.summary.totalDistance + ' m', route.summary.totalTime + ' min');
+            updateDirections(routes[0]);
           }
         }).addTo(map);
 
