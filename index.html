@@ -78,18 +78,28 @@
       font-weight: bold;
       margin-bottom: 10px;
     }
-    #collegeSelect {
+    #fileSelect, #idSelect {
       position: absolute;
       top: 10px;
-      right: 20px;
       z-index: 1000;
+    }
+    #fileSelect {
+      left: 20px;
+    }
+    #idSelect {
+      left: 200px;
     }
   </style>
 </head>
 <body>
   <div id="map"></div>
-  <select id="collegeSelect">
-    <option value="">Select College ID</option>
+  <select id="fileSelect">
+    <option value="">Select File</option>
+    <option value="colleges_edit.json">Colleges</option>
+    <option value="caf.json">Cafes</option>
+  </select>
+  <select id="idSelect">
+    <option value="">Select ID</option>
   </select>
   <div id="travelModeContainer">
     <div id="walkingMode" class="travelMode active" data-mode="walking">
@@ -107,7 +117,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-routing-machine/3.2.12/leaflet-routing-machine.js"></script>
   <script src="https://unpkg.com/@mapbox/polyline@1.0.0/src/polyline.js"></script>
   <script>
-        const mapOptions = {
+    const mapOptions = {
       zoomSnap: 0.5,
       center: [31.960055, 35.182576],
       zoom: 17.5,
@@ -118,11 +128,11 @@
       attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
     }).addTo(map);
 
-    var collegeMarkers = {};
-    var collegesData;
+    var markers = {};
+    var data;
 
-    // Custom icon for colleges
-    var collegeIcon = L.divIcon({
+    // Custom icon for colleges and cafes
+    var customIcon = L.divIcon({
       html: '<div style="background-color: pink; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; color: white;"><i class="fas fa-book-open"></i></div>',
       className: '',
       iconSize: [32, 32],
@@ -130,46 +140,52 @@
       popupAnchor: [0, -32]
     });
 
-    $.getJSON("colleges_edit.json", function(Colleges) {
-      collegesData = Colleges;
-      Colleges.features.forEach(function(feature) {
-        var latlng = L.latLng(feature.geometry.coordinates[1], feature.geometry.coordinates[0]);
-        var marker = L.marker(latlng, { icon: collegeIcon }).bindPopup("College ID: " + feature.properties.college_ID);
-        collegeMarkers[feature.properties.college_ID] = marker;
+    $('#fileSelect').change(function() {
+      var selectedFile = $(this).val();
+      if (!selectedFile) return;
 
-        // Add options to the dropdown menu
-        $('#collegeSelect').append(new Option(feature.properties.college_ID, feature.properties.college_ID));
+      $.getJSON(selectedFile, function(response) {
+        data = response;
+        markers = {};
+
+        $('#idSelect').empty().append('<option value="">Select ID</option>');
+
+        response.features.forEach(function(feature) {
+          var latlng = L.latLng(feature.geometry.coordinates[1], feature.geometry.coordinates[0]);
+          var marker = L.marker(latlng, { icon: customIcon }).bindPopup("ID: " + (selectedFile === 'colleges_edit.json' ? feature.properties.college_ID : feature.properties.Cafe_ID));
+          markers[selectedFile === 'colleges_edit.json' ? feature.properties.college_ID : feature.properties.Cafe_ID] = marker;
+
+          $('#idSelect').append(new Option(selectedFile === 'colleges_edit.json' ? feature.properties.college_ID : feature.properties.Cafe_ID, selectedFile === 'colleges_edit.json' ? feature.properties.college_ID : feature.properties.Cafe_ID));
+        });
+      }).fail(function(jqxhr, textStatus, error) {
+        console.error("Error loading " + selectedFile + ": ", textStatus, error);
       });
-    }).fail(function(jqxhr, textStatus, error) {
-      console.error("Error loading colleges_edit.json: ", textStatus, error);
     });
 
-    var selectedCollege = null;
-    var routingControl = null; // To keep track of the routing control
-    var selectedMarker = null; // To keep track of the selected college marker
+    var selectedMarker = null;
+    var routingControl = null;
     var travelMode = 'walking';
 
     $('.travelMode').click(function() {
       $('.travelMode').removeClass('active');
       $(this).addClass('active');
       travelMode = $(this).data('mode');
-      if (selectedCollege) {
-        map.locate({setView: false, maxZoom: 16}); // Set setView to false and trigger route calculation
+      if (selectedMarker) {
+        map.locate({setView: false, maxZoom: 16});
       }
     });
 
-    $('#collegeSelect').change(function() {
+    $('#idSelect').change(function() {
       var selectedId = $(this).val();
       if (!selectedId) return;
 
-      var selectedFeature = collegesData.features.find(function(feature) {
-        return feature.properties.college_ID == selectedId;
+      var selectedFeature = data.features.find(function(feature) {
+        return (feature.properties.college_ID || feature.properties.Cafe_ID) == selectedId;
       });
 
       if (selectedFeature) {
         var latlng = L.latLng(selectedFeature.geometry.coordinates[1], selectedFeature.geometry.coordinates[0]);
 
-        // Remove the previous selected marker and routing control if they exist
         if (selectedMarker !== null) {
           selectedMarker.remove();
           selectedMarker = null;
@@ -180,81 +196,56 @@
           routingControl = null;
         }
 
-        // Ensure the selected marker is added to the map before setting the view
-        selectedMarker = collegeMarkers[selectedId];
+        selectedMarker = markers[selectedId];
         selectedMarker.addTo(map);
 
-        // Center the map on the selected marker
         map.flyTo(latlng, 18);
         selectedMarker.openPopup();
 
-        // Set the selected college
-        selectedCollege = selectedFeature;
-
-        // Hide the directions container initially
         document.getElementById('directions').style.display = 'none';
       }
     });
 
-    function translateDirection(direction) {
-      const translations = {
-        "Head northwest": "اتجه شمال غرب",
-        "Turn left": "انعطف يسارًا",
-        "Turn right": "انعطف يمينًا",
-        "Continue straight": "استمر مباشرة",
-        "Enter the roundabout": "ادخل الدوار",
-        "Take the exit": "خذ المخرج",
-        // Add more translations as needed
-      };
-      return translations[direction] || direction;
-    }
-
     function updateDirections(route) {
       const directionsContainer = document.getElementById('directions');
-      directionsContainer.innerHTML = ''; // Clear previous directions
+      directionsContainer.innerHTML = '';
 
       const summary = route.summary;
       const totalDistance = summary.totalDistance < 1000 ? `${summary.totalDistance.toFixed(0)} m` : `${(summary.totalDistance / 1000).toFixed(2)} km`;
-      const totalMinutes = Math.round(summary.totalTime / 60); // convert to minutes
-      const totalHours = Math.floor(totalMinutes / 60); // calculate hours
-      const remainingMinutes = totalMinutes % 60; // calculate remaining minutes
-      const totalTime = totalHours > 0 ? `${totalHours} hr ${remainingMinutes} min` : `${totalMinutes} min`; // display in hours and minutes if hours > 0
+      const totalMinutes = Math.round(summary.totalTime / 60);
+      const totalHours = Math.floor(totalMinutes / 60);
+      const remainingMinutes = totalMinutes % 60;
+      const totalTime = totalHours > 0 ? `${totalHours} hr ${remainingMinutes} min` : `${totalMinutes} min`;
 
-      // Add summary (distance and time)
       const summaryElement = document.createElement('div');
       summaryElement.className = 'summary';
       summaryElement.innerText = `Distance: ${totalDistance}, Time: ${totalTime}`;
       directionsContainer.appendChild(summaryElement);
 
-      // Show only the next 3 steps
       for (let i = 0; i < Math.min(route.instructions.length, 3); i++) {
         const step = route.instructions[i];
-        const translatedStepText = translateDirection(step.text); // Translate the direction text
-        const stepDistance = step.distance < 1000 ? `${step.distance.toFixed(0)} m` : `${(step.distance / 1000).toFixed(2)} km`; // Show distance in meters if less than 1000, otherwise in kilometers
+        const stepDistance = step.distance < 1000 ? `${step.distance.toFixed(0)} m` : `${(step.distance / 1000).toFixed(2)} km`;
         const stepElement = document.createElement('div');
         stepElement.className = 'direction-step';
-        stepElement.innerText = `${i + 1}. ${translatedStepText} (${stepDistance})`; // Added numbering
+        stepElement.innerText = `${i + 1}. ${step.text} (${stepDistance})`;
         directionsContainer.appendChild(stepElement);
       }
     }
 
     map.on('locationfound', function(e) {
       var myLocation = e.latlng;
-      if (selectedCollege) {
-        var destination = L.latLng(selectedCollege.geometry.coordinates[1], selectedCollege.geometry.coordinates[0]);
+      if (selectedMarker) {
+        var destination = selectedMarker.getLatLng();
 
-        // Remove previous routing control if it exists
         if (routingControl !== null) {
           routingControl.getPlan().setWaypoints([]);
           routingControl.remove();
         }
 
-        // Determine the travel mode
         var routerOptions = {
           profile: travelMode === 'walking' ? 'mapbox/walking' : 'mapbox/driving'
         };
 
-        // Add new routing control with draggable waypoints
         routingControl = L.Routing.control({
           waypoints: [
             L.Routing.waypoint(myLocation, {draggable: true}),
@@ -277,28 +268,22 @@
           routeWhileDragging: true,
           showAlternatives: false,
           lineOptions: {
-            addWaypoints: true // Allow adding waypoints by dragging
+            addWaypoints: true
           },
-          // Remove the default itinerary
           itinerary: {
             containerClassName: 'custom-itinerary',
             show: false
           }
         }).on('routesfound', function(e) {
-          // Update directions whenever routes are found
           const routes = e.routes;
           if (routes.length > 0) {
             updateDirections(routes[0]);
           }
         }).addTo(map);
 
-        // Hide the default itinerary
         document.querySelector('.leaflet-routing-container').style.display = 'none';
-
-        // Show the directions container
         document.getElementById('directions').style.display = 'block';
 
-        // Fit the map to the calculated bounds
         var bounds = L.latLngBounds([myLocation, destination]);
         map.fitBounds(bounds);
       }
@@ -310,4 +295,3 @@
   </script>
 </body>
 </html>
- 
