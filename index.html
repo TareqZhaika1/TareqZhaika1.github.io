@@ -173,15 +173,15 @@
           routingControl.remove();
         }
 
-        // Add new routing control with non-draggable waypoints
+        // Add new routing control with draggable waypoints
         routingControl = L.Routing.control({
           waypoints: [
-            L.Routing.waypoint(myLocation, {draggable: false}),
-            L.Routing.waypoint(destination, {draggable: false})
+            L.Routing.waypoint(myLocation, {draggable: true}),
+            L.Routing.waypoint(destination, {draggable: true})
           ],
           createMarker: function(i, waypoint) {
             return L.marker(waypoint.latLng, {
-              draggable: false,
+              draggable: true,
               icon: L.icon({
                 iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.6.0/images/marker-icon.png',
                 iconSize: [25, 41],
@@ -192,10 +192,10 @@
               })
             });
           },
-          routeWhileDragging: false,
+          routeWhileDragging: true,
           showAlternatives: false,
           lineOptions: {
-            addWaypoints: false // Prevent adding waypoints by dragging
+            addWaypoints: true // Allow adding waypoints by dragging
           }
         }).on('routesfound', function(e) {
           // Update directions whenever routes are found
