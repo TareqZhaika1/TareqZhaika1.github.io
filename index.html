@@ -106,6 +106,7 @@
     });
 
     var selectedCollege = null;
+    var routingControl = null; // To keep track of the routing control
 
     $('#collegeSelect').change(function() {
       var selectedId = $(this).val();
@@ -133,7 +134,13 @@
           }
         }
 
+        // Set the selected college
         selectedCollege = selectedFeature;
+
+        // Remove previous routing control if exists
+        if (routingControl !== null) {
+          routingControl.removeFrom(map);
+        }
       }
     });
 
@@ -152,8 +159,13 @@
         // Fit the map to the calculated bounds
         map.fitBounds(bounds);
         
-        // Add routing control
-        L.Routing.control({
+        // Remove previous routing control if exists
+        if (routingControl !== null) {
+          routingControl.removeFrom(map);
+        }
+
+        // Add new routing control
+        routingControl = L.Routing.control({
           waypoints: [
             myLocation,
             destination
