@@ -168,7 +168,20 @@
           waypoints: [
             L.Routing.waypoint(myLocation, {draggable: false}),
             L.Routing.waypoint(destination, {draggable: false})
-          ]
+          ],
+          createMarker: function(i, waypoint) {
+            return L.marker(waypoint.latLng, {
+              draggable: false,
+              icon: L.icon({
+                iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.6.0/images/marker-icon.png',
+                iconSize: [25, 41],
+                iconAnchor: [12, 41],
+                popupAnchor: [1, -34],
+                shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.6.0/images/marker-shadow.png',
+                shadowSize: [41, 41]
+              })
+            });
+          }
         }).addTo(map);
 
         // Fit the map to the calculated bounds
