@@ -185,7 +185,7 @@
       $(this).addClass('active');
       travelMode = $(this).data('mode');
       if (selectedFeature) {
-        map.locate({setView: false, maxZoom: 16}); // Set setView to false and trigger route calculation
+        map.locate({setView: false, watch: true, maxZoom: 16}); // Set setView to false and watch to true to trigger route calculation dynamically
       }
     });
 
@@ -279,7 +279,7 @@
     map.on('locationfound', function(e) {
       var myLocation = e.latlng;
       if (selectedFeature) {
-        var destination = L.latLng(selectedFeature.geometry.coordinates[1], selectedFeature.geometry.coordinates[0]);
+        var destination = L.latlng(selectedFeature.geometry.coordinates[1], selectedFeature.geometry.coordinates[0]);
 
         // Remove previous routing control if it exists
         if (routingControl !== null) {
@@ -317,7 +317,7 @@
           routeWhileDragging: true,
           showAlternatives: false,
           lineOptions: {
-            addWaypoints: true // Allow adding waypoints by dragging
+            addWaypoints: false // Prevent adding waypoints by dragging
           },
           // Remove the default itinerary
           itinerary: {
@@ -375,6 +375,20 @@
         directionsContainer.appendChild(stepElement);
       }
     }
+
+    function onLocationFound(e) {
+      var myLocation = e.latlng;
+      if (selectedFeature) {
+        var destination = L.latlng(selectedFeature.geometry.coordinates[1], selectedFeature.geometry.coordinates[0]);
+
+        // Update the routing control with the new location
+        if (routingControl !== null) {
+          routingControl.getPlan().setWaypoints([myLocation, destination]);
+        }
+      }
+    }
+
+    map.locate({ watch: true, setView: false, maxZoom: 16 }).on('locationfound', onLocationFound);
   </script>
 </body>
 </html>
