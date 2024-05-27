@@ -18,48 +18,54 @@
       top: 0;
       bottom: 0;
     }
-    #controls {
+    #collegeSelect {
       position: absolute;
       top: 10px;
       left: 20px;
       z-index: 1000;
     }
-    #collegeSelect {
-      max-width: 200px;
-    }
-    #navigateButton {
-      margin-top: 10px;
-      display: block;
+    #locateButton {
+      position: absolute;
+      top: 50px;
+      left: 20px;
+      z-index: 1000;
     }
     .leaflet-routing-container {
-      background-color: transparent; /* No background color */
-      color: red; /* Font color to red */
-      font-size: 12px; /* Smaller font size for route instructions */
-      position: relative; /* Ensure proper positioning */
-      right: 20px; /* Move the container 20 pixels from the right */
-      transform: translate(1%, 80%); /* Move the container 80% of its own height to the bottom */
+        background-color: transparent;
+        color: red;
+        font-size: 12px;
+        position: relative;
+        right: 20px;
+        transform: translate(1%, 80%);
     }
     @media (min-width: 769px) {
-      #controls {
+      #collegeSelect {
         left: auto;
         right: 20px;
       }
+      #locateButton {
+        left: auto;
+        right: 20px;
+        top: 60px;
+      }
     }
     @media (max-width: 768px) {
-      #controls {
+      #collegeSelect {
         left: 50px;
+      }
+      #locateButton {
+        left: 50px;
+        top: 80px;
       }
     }
   </style>
 </head>
 <body>
   <div id="map"></div>
-  <div id="controls">
-    <select id="collegeSelect">
-      <option value="">Select College ID</option>
-    </select>
-    <button id="navigateButton">Take me to my Destination</button>
-  </div>
+  <select id="collegeSelect">
+    <option value="">Select College ID</option>
+  </select>
+  <button id="locateButton">Take me to my Destination</button>
   <script src="https://unpkg.com/leaflet@1.6.0/dist/leaflet.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-routing-machine/3.2.12/leaflet-routing-machine.js"></script>
@@ -75,36 +81,31 @@
       attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
     }).addTo(map);
 
-    var collegeLayer;
-    var collegesData;
-    var selectedCollege;
     var collegeMarkers = {};
+    var collegesData;
 
     $.getJSON("colleges_edit.json", function(Colleges) {
       collegesData = Colleges;
-      collegeLayer = L.geoJson(Colleges, {
-        pointToLayer: function(feature, latlng) {
-          var marker = L.circleMarker(latlng, {
-            radius: 5,
-            fillColor: "blue",
-            color: "blue",
-            weight: 1,
-            opacity: 1,
-            fillOpacity: 0.8
-          }).addTo(map);
-          marker.bindPopup("College ID: " + feature.properties.college_ID);
-          collegeMarkers[feature.properties.college_ID] = marker;
-          marker.remove(); // Hide marker initially
-          return marker;
-        }
-      });
-
       Colleges.features.forEach(function(feature) {
+        var latlng = L.latLng(feature.geometry.coordinates[1], feature.geometry.coordinates[0]);
+        var marker = L.circleMarker(latlng, {
+          radius: 5,
+          fillColor: "blue",
+          color: "blue",
+          weight: 1,
+          opacity: 1,
+          fillOpacity: 0.8
+        }).bindPopup("College ID: " + feature.properties.college_ID);
+        collegeMarkers[feature.properties.college_ID] = marker;
+
+        // Add options to the dropdown menu
         $('#collegeSelect').append(new Option(feature.properties.college_ID, feature.properties.college_ID));
       });
     }).fail(function(jqxhr, textStatus, error) {
       console.error("Error loading colleges_edit.json: ", textStatus, error);
     });
+
+    var selectedCollege = null;
 
     $('#collegeSelect').change(function() {
       var selectedId = $(this).val();
@@ -116,39 +117,43 @@
 
       if (selectedFeature) {
         var latlng = L.latLng(selectedFeature.geometry.coordinates[1], selectedFeature.geometry.coordinates[0]);
-        map.setView(latlng, 18);
-
-        // Hide all markers
-        for (var key in collegeMarkers) {
-          collegeMarkers[key].remove();
-        }
-
-        // Show the selected marker and open its popup
+        
+        // Ensure the selected marker is added to the map before setting the view
         var selectedMarker = collegeMarkers[selectedId];
         selectedMarker.addTo(map);
-        selectedMarker.openPopup();
+        
+        // Use setTimeout to ensure the marker is visible before centering the map
+        setTimeout(function() {
+          map.setView(latlng, 18);
+          selectedMarker.openPopup();
+        }, 0);
+
+        // Hide all other markers
+        for (var key in collegeMarkers) {
+          if (key !== selectedId) {
+            collegeMarkers[key].remove();
+          }
+        }
 
         selectedCollege = selectedFeature;
       }
     });
 
-    $('#navigateButton').click(function() {
+    $('#locateButton').click(function() {
       map.locate({setView: true, maxZoom: 16});
     });
 
     map.on('locationfound', function(e) {
       var myLocation = e.latlng;
-      if (!selectedCollege) return;
-
-      var destination = L.latLng(selectedCollege.geometry.coordinates[1], selectedCollege.geometry.coordinates[0]);
-
-      L.Routing.control({
-        waypoints: [
-          myLocation,
-          destination
-        ],
-        routeWhileDragging: true
-      }).addTo(map);
+      if (selectedCollege) {
+        var destination = L.latLng(selectedCollege.geometry.coordinates[1], selectedCollege.geometry.coordinates[0]);
+        L.Routing.control({
+          waypoints: [
+            myLocation,
+            destination
+          ]
+        }).addTo(map);
+      }
     });
   </script>
 </body>
