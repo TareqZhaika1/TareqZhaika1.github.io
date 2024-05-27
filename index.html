@@ -107,6 +107,7 @@
 
     var selectedCollege = null;
     var routingControl = null; // To keep track of the routing control
+    var selectedMarker = null; // To keep track of the selected college marker
 
     $('#collegeSelect').change(function() {
       var selectedId = $(this).val();
@@ -119,20 +120,18 @@
       if (selectedFeature) {
         var latlng = L.latLng(selectedFeature.geometry.coordinates[1], selectedFeature.geometry.coordinates[0]);
         
+        // Remove the previous selected marker if exists
+        if (selectedMarker !== null) {
+          selectedMarker.remove();
+        }
+        
         // Ensure the selected marker is added to the map before setting the view
-        var selectedMarker = collegeMarkers[selectedId];
+        selectedMarker = collegeMarkers[selectedId];
         selectedMarker.addTo(map);
         
         // Center the map on the selected marker with flyTo
         map.flyTo(latlng, 18);
         selectedMarker.openPopup();
-
-        // Hide all other markers
-        for (var key in collegeMarkers) {
-          if (key !== selectedId) {
-            collegeMarkers[key].remove();
-          }
-        }
 
         // Set the selected college
         selectedCollege = selectedFeature;
