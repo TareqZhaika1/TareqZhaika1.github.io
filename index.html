@@ -120,9 +120,12 @@
       if (selectedFeature) {
         var latlng = L.latLng(selectedFeature.geometry.coordinates[1], selectedFeature.geometry.coordinates[0]);
         
-        // Remove the previous selected marker if exists
+        // Remove the previous selected marker and routing control if they exist
         if (selectedMarker !== null) {
           selectedMarker.remove();
+        }
+        if (routingControl !== null) {
+          routingControl.removeFrom(map);
         }
         
         // Ensure the selected marker is added to the map before setting the view
@@ -135,11 +138,6 @@
 
         // Set the selected college
         selectedCollege = selectedFeature;
-
-        // Remove previous routing control if exists
-        if (routingControl !== null) {
-          routingControl.removeFrom(map);
-        }
       }
     });
 
