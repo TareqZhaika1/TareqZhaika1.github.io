@@ -122,11 +122,9 @@
         var selectedMarker = collegeMarkers[selectedId];
         selectedMarker.addTo(map);
         
-        // Use setTimeout to ensure the marker is visible before centering the map
-        setTimeout(function() {
-          map.setView(latlng, 18);
-          selectedMarker.openPopup();
-        }, 0);
+        // Center the map on the selected marker
+        map.setView(latlng, 18);
+        selectedMarker.openPopup();
 
         // Hide all other markers
         for (var key in collegeMarkers) {
