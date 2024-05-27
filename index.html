@@ -211,7 +211,7 @@
             L.Routing.waypoint(myLocation, {draggable: true}),
             L.Routing.waypoint(destination, {draggable: true})
           ],
-          router: L.Routing.mapbox('pk.eyJ1IjoidGFyZXF6aGFpa2EiLCJhIjoiY2x3cDZ4b2VnMWk0dTJxczFmdXE0Y3MwcCJ9.yWtxunGkYaYZDtvjtAt-ww', routerOptions),
+          router: L.Routing.mapbox('YOUR_MAPBOX_ACCESS_TOKEN', routerOptions),
           createMarker: function(i, waypoint) {
             return L.marker(waypoint.latLng, {
               draggable: true,
