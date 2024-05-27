@@ -78,12 +78,17 @@
       font-weight: bold;
       margin-bottom: 10px;
     }
-    #selectDestination, #selectID {
+    #collegeSelect {
       position: absolute;
       top: 10px;
       right: 20px;
       z-index: 1000;
-      margin-left: 10px;
+    }
+    #selectDestination {
+      position: absolute;
+      top: 10px;
+      right: 200px;
+      z-index: 1000;
     }
   </style>
 </head>
@@ -94,7 +99,7 @@
     <option value="colleges">Colleges</option>
     <option value="cafes">Cafeterias</option>
   </select>
-  <select id="selectID" style="display:none; margin-left: 5px;">
+  <select id="collegeSelect">
     <option value="">Select ID</option>
   </select>
   <div id="travelModeContainer">
@@ -128,7 +133,7 @@
     var cafeMarkers = {};
     var collegesData, cafesData;
 
-    // Custom icons for colleges and cafes
+    // Custom icon for colleges
     var collegeIcon = L.divIcon({
       html: '<div style="background-color: pink; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; color: white;"><i class="fas fa-book-open"></i></div>',
       className: '',
@@ -137,46 +142,42 @@
       popupAnchor: [0, -32]
     });
 
+    // Custom icon for cafes
     var cafeIcon = L.divIcon({
-      html: '<div style="background-color: gold; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; color: white;"><i class="fas fa-utensils"></i></div>',
+      html: '<div style="background-color: yellow; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; color: white;"><i class="fas fa-utensils"></i></div>',
       className: '',
       iconSize: [32, 32],
       iconAnchor: [16, 32],
       popupAnchor: [0, -32]
     });
 
-    function loadColleges() {
-      $.getJSON("colleges_edit.json", function(Colleges) {
-        collegesData = Colleges;
-        Colleges.features.forEach(function(feature) {
-          var latlng = L.latLng(feature.geometry.coordinates[1], feature.geometry.coordinates[0]);
-          var marker = L.marker(latlng, { icon: collegeIcon }).bindPopup("College ID: " + feature.properties.college_ID);
-          collegeMarkers[feature.properties.college_ID] = marker;
-        });
-      }).fail(function(jqxhr, textStatus, error) {
-        console.error("Error loading colleges_edit.json: ", textStatus, error);
+    // Load colleges data
+    $.getJSON("colleges_edit.json", function(Colleges) {
+      collegesData = Colleges;
+      Colleges.features.forEach(function(feature) {
+        var latlng = L.latLng(feature.geometry.coordinates[1], feature.geometry.coordinates[0]);
+        var marker = L.marker(latlng, { icon: collegeIcon }).bindPopup("College ID: " + feature.properties.college_ID);
+        collegeMarkers[feature.properties.college_ID] = marker;
       });
-    }
+    }).fail(function(jqxhr, textStatus, error) {
+      console.error("Error loading colleges_edit.json: ", textStatus, error);
+    });
 
-    function loadCafes() {
-      $.getJSON("caf.json", function(Cafes) {
-        cafesData = Cafes;
-        Cafes.features.forEach(function(feature) {
-          var latlng = L.latLng(feature.geometry.coordinates[1], feature.geometry.coordinates[0]);
-          var marker = L.marker(latlng, { icon: cafeIcon }).bindPopup("Cafe ID: " + feature.properties.Cafe_ID);
-          cafeMarkers[feature.properties.Cafe_ID] = marker;
-        });
-      }).fail(function(jqxhr, textStatus, error) {
-        console.error("Error loading caf.json: ", textStatus, error);
+    // Load cafes data
+    $.getJSON("caf.json", function(Cafes) {
+      cafesData = Cafes;
+      Cafes.features.forEach(function(feature) {
+        var latlng = L.latLng(feature.geometry.coordinates[1], feature.geometry.coordinates[0]);
+        var marker = L.marker(latlng, { icon: cafeIcon }).bindPopup("Cafe ID: " + feature.properties.Cafe_ID);
+        cafeMarkers[feature.properties.Cafe_ID] = marker;
       });
-    }
-
-    loadColleges();
-    loadCafes();
+    }).fail(function(jqxhr, textStatus, error) {
+      console.error("Error loading caf.json: ", textStatus, error);
+    });
 
     var selectedFeature = null;
-    var routingControl = null;
-    var selectedMarker = null;
+    var routingControl = null; // To keep track of the routing control
+    var selectedMarker = null; // To keep track of the selected marker
     var travelMode = 'walking';
 
     $('.travelMode').click(function() {
@@ -190,40 +191,33 @@
 
     $('#selectDestination').change(function() {
       var selectedCategory = $(this).val();
-      $('#selectID').empty().append(new Option("Select ID", "")).hide();
-
+      $('#collegeSelect').empty().append(new Option("Select ID", ""));
+      
       if (selectedCategory === "colleges") {
         collegesData.features.forEach(function(feature) {
-          $('#selectID').append(new Option(feature.properties.college_ID, feature.properties.college_ID));
+          $('#collegeSelect').append(new Option(feature.properties.college_ID, feature.properties.college_ID));
         });
       } else if (selectedCategory === "cafes") {
         cafesData.features.forEach(function(feature) {
-          $('#selectID').append(new Option(feature.properties.Cafe_ID, feature.properties.Cafe_ID));
+          $('#collegeSelect').append(new Option(feature.properties.Cafe_ID, feature.properties.Cafe_ID));
         });
       }
 
-      $('#selectID').show();
-
-      // Remove selected marker and routing control if exist
-      if (selectedMarker !== null) {
-        selectedMarker.remove();
-        selectedMarker = null;
+      if (!selectedCategory) {
+        $('#collegeSelect').hide();
+      } else {
+        $('#collegeSelect').show();
       }
-      if (routingControl !== null) {
-        routingControl.getPlan().setWaypoints([]);
-        routingControl.remove();
-        routingControl = null;
-      }
-
-      // Hide directions container
-      document.getElementById('directions').style.display = 'none';
     });
 
-    $('#selectID').change(function() {
+    $('#collegeSelect').change(function() {
       var selectedId = $(this).val();
       if (!selectedId) return;
 
       var selectedCategory = $('#selectDestination').val();
+
+      // Clear all existing markers and routes
+      clearMap();
 
       if (selectedCategory === "colleges") {
         selectedFeature = collegesData.features.find(function(feature) {
@@ -239,40 +233,47 @@
 
       if (selectedFeature) {
         var latlng = L.latLng(selectedFeature.geometry.coordinates[1], selectedFeature.geometry.coordinates[0]);
-        map.flyTo(latlng, 18);
-        selectedMarker.addTo(map).openPopup();
 
-        // Hide directions container
+        // Add the selected marker to the map
+        selectedMarker.addTo(map);
+
+        // Center the map on the selected marker
+        map.flyTo(latlng, 18);
+        selectedMarker.openPopup();
+
+        // Set the selected feature
+        selectedFeature = selectedFeature;
+
+        // Hide the directions container initially
         document.getElementById('directions').style.display = 'none';
       }
     });
 
-    function updateDirections(route) {
-      const directionsContainer = document.getElementById('directions');
-      directionsContainer.innerHTML = ''; // Clear previous directions
-
-      const summary = route.summary;
-      const totalDistance = summary.totalDistance < 1000 ? `${summary.totalDistance.toFixed(0)} m` : `${(summary.totalDistance / 1000).toFixed(2)} km`;
-      const totalMinutes = Math.round(summary.totalTime / 60); // convert to minutes
-      const totalHours = Math.floor(totalMinutes / 60); // calculate hours
-      const remainingMinutes = totalMinutes % 60; // calculate remaining minutes
-      const totalTime = totalHours > 0 ? `${totalHours} hr ${remainingMinutes} min` : `${totalMinutes} min`; // display in hours and minutes if hours > 0
-
-      // Add summary (distance and time)
-      const summaryElement = document.createElement('div');
-      summaryElement.className = 'summary';
-      summaryElement.innerText = `Distance: ${totalDistance}, Time: ${totalTime}`;
-      directionsContainer.appendChild(summaryElement);
-
-      // Show only the next 3 steps
-      for (let i = 0; i < Math.min(route.instructions.length, 3); i++) {
-        const step = route.instructions[i];
-        const stepDistance = step.distance < 1000 ? `${step.distance.toFixed(0)} m` : `${(step.distance / 1000).toFixed(2)} km`; // Show distance in meters if less than 1000, otherwise in kilometers
-        const stepElement = document.createElement('div');
-        stepElement.className = 'direction-step';
-        stepElement.innerText = `${i + 1}. ${step.text} (${stepDistance})`; // Added numbering
-        directionsContainer.appendChild(stepElement);
+    function clearMap() {
+      // Remove all college markers
+      for (var id in collegeMarkers) {
+        if (collegeMarkers.hasOwnProperty(id)) {
+          map.removeLayer(collegeMarkers[id]);
+        }
       }
+
+      // Remove all cafe markers
+      for (var id in cafeMarkers) {
+        if (cafeMarkers.hasOwnProperty(id)) {
+          map.removeLayer(cafeMarkers[id]);
+        }
+      }
+
+      // Remove the routing control
+      if (routingControl !== null) {
+        routingControl.getPlan().setWaypoints([]);
+        routingControl.remove();
+        routingControl = null;
+      }
+
+      // Clear the directions container
+      document.getElementById('directions').innerHTML = '';
+      document.getElementById('directions').style.display = 'none';
     }
 
     map.on('locationfound', function(e) {
@@ -344,6 +345,34 @@
     map.on('locationerror', function(e) {
       alert("Location access denied.");
     });
+
+    function updateDirections(route) {
+      const directionsContainer = document.getElementById('directions');
+      directionsContainer.innerHTML = ''; // Clear previous directions
+
+      const summary = route.summary;
+      const totalDistance = summary.totalDistance < 1000 ? `${summary.totalDistance.toFixed(0)} m` : `${(summary.totalDistance / 1000).toFixed(2)} km`;
+      const totalMinutes = Math.round(summary.totalTime / 60); // convert to minutes
+      const totalHours = Math.floor(totalMinutes / 60); // calculate hours
+      const remainingMinutes = totalMinutes % 60; // calculate remaining minutes
+      const totalTime = totalHours > 0 ? `${totalHours} hr ${remainingMinutes} min` : `${totalMinutes} min`; // display in hours and minutes if hours > 0
+
+      // Add summary (distance and time)
+      const summaryElement = document.createElement('div');
+      summaryElement.className = 'summary';
+      summaryElement.innerText = `Distance: ${totalDistance}, Time: ${totalTime}`;
+      directionsContainer.appendChild(summaryElement);
+
+      // Show only the next 3 steps
+      for (let i = 0; i < Math.min(route.instructions.length, 3); i++) {
+        const step = route.instructions[i];
+        const stepDistance = step.distance < 1000 ? `${step.distance.toFixed(0)} m` : `${(step.distance / 1000).toFixed(2)} km`; // Show distance in meters if less than 1000, otherwise in kilometers
+        const stepElement = document.createElement('div');
+        stepElement.className = 'direction-step';
+        stepElement.innerText = `${i + 1}. ${step.text} (${stepDistance})`; // Added numbering
+        directionsContainer.appendChild(stepElement);
+      }
+    }
   </script>
 </body>
 </html>
