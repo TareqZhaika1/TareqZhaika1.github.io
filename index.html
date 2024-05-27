@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>Ramallah Libraries and Colleges</title>
+  <title>Birzeit Univresity Campus</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.6.0/dist/leaflet.css" />
   <style>
@@ -98,66 +98,6 @@
       attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
     }).addTo(map);
 
-    function getColor(name) {
-      switch (name) {
-        case "Al-Masyoun":
-          return "red";
-        case "Baten El-Hawa":
-          return "blue";
-        case "City Center":
-          return "Green";
-        case "Old City":
-          return "Orange";
-        case "Al-Wad":
-          return "Purple";
-        case "The Industrial Area":
-          return "Pink";
-        case "Al-Itha'a":
-          return "Gray";
-        case "Al-Tireh":
-          return "White";
-        default:
-          return "yellow";
-      }
-    }
-
-    var zoneLayer;
-    $.getJSON("RamallahZones.json", function (RZ) {
-      zoneLayer = L.geoJson(RZ, {
-        style: function (feature) {
-          return {
-            fillColor: getColor(feature.properties.NAME_ENGLI),
-            fillOpacity: 0.3,
-            color: "yellow",
-            weight: 1.0,
-            opacity: 0.7
-          };
-        },
-        onEachFeature: function (feature, layer) {
-          layer.bindPopup("Zone Name: " + feature.properties.NAME + "<br>Zone: " + feature.properties.NAME_ENGLI + "<br>MAIL_CODE: " + feature.properties.MAIL_CODE);
-        }
-      }).addTo(map);
-    });
-
-    var pointLayer;
-    $.getJSON("Libraries_P.json", function(WC) {
-      pointLayer = L.geoJson(WC, {
-        pointToLayer: function(feature, latlng) {
-          return L.circleMarker(latlng, {
-            radius: 5,
-            fillColor: "red",
-            color: "red",
-            weight: 1,
-            opacity: 1,
-            fillOpacity: 0.8
-          });
-        },
-        onEachFeature: function(feature, layer) {
-          layer.bindPopup("<br>ID: " + feature.properties.OBJECTID + "<br>Arabic Name: " + feature.properties.BUSNIESS_N + "<br>English Name: " + feature.properties.BUSNIESS_1 + "<br>X Coordination: " + feature.properties.X + "<br>Y Coordination: " + feature.properties.Y);
-        }
-      }).addTo(map);
-    });
-
     var collegeLayer;
     $.getJSON("colleges_edit.json", function(Colleges) {
       console.log("colleges_edit data loaded", Colleges); // Debugging log
@@ -176,7 +116,7 @@
         onEachFeature: function(feature, layer) {
           layer.bindPopup("College ID: " + feature.properties.college_ID);
         }
-        }).addTo(map);
+      }).addTo(map);
     }).fail(function(jqxhr, textStatus, error) {
       console.error("Error loading colleges_edit.json: ", textStatus, error); // Error handling
     });
@@ -187,31 +127,8 @@
 
     map.on('locationfound', function(e) {
       var myLocation = e.latlng;
-      var nearestLibrary;
-      var minDist = Infinity;
-      pointLayer.eachLayer(function(layer) {
-        var dist = myLocation.distanceTo(layer.getLatLng());
-        if (dist < minDist) {
-          minDist = dist;
-          nearestLibrary = layer;
-        }
-      });
-      if (window.routingControl) {
-        map.removeControl(window.routingControl);
-      }
-
-      window.routingControl = L.Routing.control({
-        waypoints: [
-          L.latLng(myLocation.lat, myLocation.lng),
-          nearestLibrary.getLatLng()
-        ],
-        routeWhileDragging: true,
-        lineOptions: {
-          styles: [{ color: 'red', opacity: 0.8, weight: 6 }]
-        }
-      }).addTo(map);
+      // Additional location found logic can go here if needed
     });
   </script>
 </body>
 </html>
-
