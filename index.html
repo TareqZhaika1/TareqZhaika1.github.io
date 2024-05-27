@@ -51,7 +51,7 @@
     }
     #directions {
       position: absolute;
-      top: 110px;
+      top: 130px;
       right: 20px;
       z-index: 1000;
       background-color: rgba(255, 255, 255, 0.9);
@@ -188,11 +188,8 @@
         // Set the selected college
         selectedCollege = selectedFeature;
 
-        // Show the directions container
-        document.getElementById('directions').style.display = 'block';
-
-        // Trigger route calculation
-        map.locate({setView: false, maxZoom: 16});
+        // Hide the directions container initially
+        document.getElementById('directions').style.display = 'none';
       }
     });
 
@@ -280,6 +277,9 @@
 
         // Hide the default itinerary
         document.querySelector('.leaflet-routing-container').style.display = 'none';
+
+        // Show the directions container
+        document.getElementById('directions').style.display = 'block';
 
         // Fit the map to the calculated bounds
         var bounds = L.latLngBounds([myLocation, destination]);
