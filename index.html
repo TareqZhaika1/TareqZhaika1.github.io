@@ -72,7 +72,8 @@
   <script>
     const mapOptions = {
       zoomSnap: 0.5,
-      zoomControl: false, // Disable default zoom control
+      center: [31.960055, 35.182576],
+      zoom: 17.5,
     };
     const map = L.map("map", mapOptions);
 
@@ -141,7 +142,7 @@
     });
 
     $('#locateButton').click(function() {
-      map.locate({setView: true, maxZoom: 16}); // Set setView to true
+      map.locate({setView: false, maxZoom: 16}); // Set setView to false
     });
 
     map.on('locationfound', function(e) {
