@@ -109,14 +109,6 @@
     var routingControl = null; // To keep track of the routing control
     var selectedMarker = null; // To keep track of the selected college marker
 
-    function centerOnCollege() {
-      if (selectedCollege) {
-        var latlng = L.latLng(selectedCollege.geometry.coordinates[1], selectedCollege.geometry.coordinates[0]);
-        map.flyTo(latlng, 18);
-        selectedMarker.openPopup();
-      }
-    }
-
     $('#collegeSelect').change(function() {
       var selectedId = $(this).val();
       if (!selectedId) return;
@@ -128,14 +120,15 @@
       if (selectedFeature) {
         var latlng = L.latLng(selectedFeature.geometry.coordinates[1], selectedFeature.geometry.coordinates[0]);
 
-        // Remove the previous selected marker if it exists
+        // Remove the previous selected marker and routing control if they exist
         if (selectedMarker !== null) {
           selectedMarker.remove();
+          selectedMarker = null;
         }
-
-        // Remove previous routing control if it exists
         if (routingControl !== null) {
-          routingControl.removeFrom(map);
+          routingControl.getPlan().setWaypoints([]);
+          routingControl.remove();
+          routingControl = null;
         }
 
         // Ensure the selected marker is added to the map before setting the view
@@ -166,7 +159,8 @@
 
         // Remove previous routing control if it exists
         if (routingControl !== null) {
-          routingControl.removeFrom(map);
+          routingControl.getPlan().setWaypoints([]);
+          routingControl.remove();
         }
 
         // Add new routing control
