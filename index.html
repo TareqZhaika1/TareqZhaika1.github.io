@@ -5,6 +5,7 @@
   <title>Birzeit University Campus</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.6.0/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
   <style>
     body {
       margin: 0;
@@ -77,31 +78,28 @@
       font-weight: bold;
       margin-bottom: 10px;
     }
-    #fileSelect {
-      position: absolute;
-      top: 10px;
-      right: 120px;
-      z-index: 1000;
-    }
-    #idSelect {
+    #selectContainer {
       position: absolute;
       top: 10px;
       right: 20px;
       z-index: 1000;
-      display: none; /* Hide initially */
+      display: flex;
+      gap: 5px;
     }
   </style>
 </head>
 <body>
   <div id="map"></div>
-  <select id="fileSelect">
-    <option value="">Select your Destination</option>
-    <option value="colleges_edit.json">Colleges</option>
-    <option value="caf.json">Cafeterias</option>
-  </select>
-  <select id="idSelect">
-    <option value="">Select ID</option>
-  </select>
+  <div id="selectContainer">
+    <select id="fileSelect">
+      <option value="">Select your Destination</option>
+      <option value="colleges_edit.json">Colleges</option>
+      <option value="caf.json">Cafeterias</option>
+    </select>
+    <select id="idSelect" style="display:none;">
+      <option value="">Select ID</option>
+    </select>
+  </div>
   <div id="travelModeContainer">
     <div id="walkingMode" class="travelMode active" data-mode="walking">
       <img src="https://img.icons8.com/ios-filled/50/000000/walking.png" alt="Walking">
@@ -130,97 +128,87 @@
     }).addTo(map);
 
     var collegeMarkers = {};
-    var cafesMarkers = {};
     var collegesData;
+    var cafeMarkers = {};
     var cafesData;
 
-    $.getJSON("colleges_edit.json", function(data) {
-      collegesData = data;
-      data.features.forEach(function(feature) {
-        var latlng = L.latLng(feature.geometry.coordinates[1], feature.geometry.coordinates[0]);
-        var marker = L.circleMarker(latlng, {
-          radius: 8,
-          fillColor: "#f28a8a",
-          color: "#f28a8a",
-          weight: 1,
-          opacity: 1,
-          fillOpacity: 0.8
-        }).bindPopup("College ID: " + feature.properties.college_ID);
-        collegeMarkers[feature.properties.college_ID] = marker;
-      });
-    }).fail(function(jqxhr, textStatus, error) {
-      console.error("Error loading colleges_edit.json: ", textStatus, error);
+    // Custom icons
+    var collegeIcon = L.divIcon({
+      html: '<div style="background-color: pink; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; color: white;"><i class="fas fa-book-open"></i></div>',
+      className: '',
+      iconSize: [32, 32],
+      iconAnchor: [16, 32],
+      popupAnchor: [0, -32]
     });
 
-    $.getJSON("caf.json", function(data) {
-      cafesData = data;
-      data.features.forEach(function(feature) {
-        var latlng = L.latLng(feature.geometry.coordinates[1], feature.geometry.coordinates[0]);
-        var marker = L.circleMarker(latlng, {
-          radius: 8,
-          fillColor: "#f28a8a",
-          color: "#f28a8a",
-          weight: 1,
-          opacity: 1,
-          fillOpacity: 0.8
-        }).bindPopup("Cafe ID: " + feature.properties.Cafe_ID);
-        cafesMarkers[feature.properties.Cafe_ID] = marker;
-      });
-    }).fail(function(jqxhr, textStatus, error) {
-      console.error("Error loading caf.json: ", textStatus, error);
+    var cafeIcon = L.divIcon({
+      html: '<div style="background-color: #FFD700; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; color: white;"><i class="fas fa-utensils"></i></div>',
+      className: '',
+      iconSize: [32, 32],
+      iconAnchor: [16, 32],
+      popupAnchor: [0, -32]
     });
 
-    var selectedFile = null;
-    var selectedID = null;
+    function loadFileData(url, icon, markerDict, dataVar) {
+      $.getJSON(url, function(data) {
+        dataVar = data;
+        data.features.forEach(function(feature) {
+          var latlng = L.latLng(feature.geometry.coordinates[1], feature.geometry.coordinates[0]);
+          var marker = L.marker(latlng, { icon: icon }).bindPopup("ID: " + feature.properties.college_ID || feature.properties.Cafe_ID);
+          markerDict[feature.properties.college_ID || feature.properties.Cafe_ID] = marker;
+
+          // Add options to the dropdown menu
+          $('#idSelect').append(new Option(feature.properties.college_ID || feature.properties.Cafe_ID, feature.properties.college_ID || feature.properties.Cafe_ID));
+        });
+      }).fail(function(jqxhr, textStatus, error) {
+        console.error("Error loading " + url + ": ", textStatus, error);
+      });
+    }
+
+    $('#fileSelect').change(function() {
+      var selectedFile = $(this).val();
+      $('#idSelect').empty().append(new Option("Select ID", ""));
+      if (!selectedFile) {
+        $('#idSelect').hide();
+        return;
+      }
+      $('#idSelect').show();
+
+      if (selectedFile === "colleges_edit.json") {
+        loadFileData("colleges_edit.json", collegeIcon, collegeMarkers, collegesData);
+      } else if (selectedFile === "caf.json") {
+        loadFileData("caf.json", cafeIcon, cafeMarkers, cafesData);
+      }
+    });
+
+    var selectedCollege = null;
     var routingControl = null; // To keep track of the routing control
-    var selectedMarker = null; // To keep track of the selected marker
+    var selectedMarker = null; // To keep track of the selected college marker
     var travelMode = 'walking';
 
     $('.travelMode').click(function() {
       $('.travelMode').removeClass('active');
       $(this).addClass('active');
       travelMode = $(this).data('mode');
-      if (selectedID) {
+      if (selectedCollege) {
         map.locate({setView: false, maxZoom: 16}); // Set setView to false and trigger route calculation
       }
     });
 
-    $('#fileSelect').change(function() {
-      var selectedValue = $(this).val();
-      selectedFile = selectedValue;
-      $('#idSelect').empty().append(new Option('Select ID', ''));
-      if (selectedValue === 'colleges_edit.json') {
-        for (var id in collegeMarkers) {
-          $('#idSelect').append(new Option(id, id));
-        }
-      } else if (selectedValue === 'caf.json') {
-        for (var id in cafesMarkers) {
-          $('#idSelect').append(new Option(id, id));
-        }
-      }
-      $('#idSelect').show();
-    });
-
     $('#idSelect').change(function() {
       var selectedId = $(this).val();
-      selectedID = selectedId;
-      if (!selectedId) {
-        if (selectedMarker !== null) {
-          selectedMarker.remove();
-          selectedMarker = null;
-        }
-        $('#idSelect').hide();
-        return;
-      }
+      if (!selectedId) return;
 
-      var data = selectedFile === 'colleges_edit.json' ? collegesData : cafesData;
-      var selectedFeature = data.features.find(function(feature) {
-        return feature.properties[selectedFile === 'colleges_edit.json' ? 'college_ID' : 'Cafe_ID'] == selectedId;
-      });
+      var selectedFeature = (collegesData && collegesData.features.find(function(feature) {
+        return feature.properties.college_ID == selectedId;
+      })) || (cafesData && cafesData.features.find(function(feature) {
+        return feature.properties.Cafe_ID == selectedId;
+      }));
 
       if (selectedFeature) {
         var latlng = L.latLng(selectedFeature.geometry.coordinates[1], selectedFeature.geometry.coordinates[0]);
 
+        // Remove the previous selected marker and routing control if they exist
         if (selectedMarker !== null) {
           selectedMarker.remove();
           selectedMarker = null;
@@ -231,12 +219,19 @@
           routingControl = null;
         }
 
-        selectedMarker = selectedFile === 'colleges_edit.json' ? collegeMarkers[selectedId] : cafesMarkers[selectedId];
+        // Ensure the selected marker is added to the map before setting the view
+        selectedMarker = (collegesData ? collegeMarkers[selectedId] : cafeMarkers[selectedId]);
         selectedMarker.addTo(map);
+
+        // Center the map on the selected marker
         map.flyTo(latlng, 18);
         selectedMarker.openPopup();
 
-        $('#directions').hide();
+        // Set the selected college or cafe
+        selectedCollege = selectedFeature;
+
+        // Hide the directions container initially
+        document.getElementById('directions').style.display = 'none';
       }
     });
 
@@ -251,14 +246,16 @@
       const remainingMinutes = totalMinutes % 60; // calculate remaining minutes
       const totalTime = totalHours > 0 ? `${totalHours} hr ${remainingMinutes} min` : `${totalMinutes} min`; // display in hours and minutes if hours > 0
 
+      // Add summary (distance and time)
       const summaryElement = document.createElement('div');
       summaryElement.className = 'summary';
       summaryElement.innerText = `Distance: ${totalDistance}, Time: ${totalTime}`;
       directionsContainer.appendChild(summaryElement);
 
+      // Show only the next 3 steps
       for (let i = 0; i < Math.min(route.instructions.length, 3); i++) {
         const step = route.instructions[i];
-        const stepDistance = step.distance < 1000 ? `${step.distance.toFixed(0)} m` : `${(step.distance / 1000).toFixed(2)} km`;
+        const stepDistance = step.distance < 1000 ? `${step.distance.toFixed(0)} m` : `${(step.distance / 1000).toFixed(2)} km`; // Show distance in meters if less than 1000, otherwise in kilometers
         const stepElement = document.createElement('div');
         stepElement.className = 'direction-step';
         stepElement.innerText = `${i + 1}. ${step.text} (${stepDistance})`; // Added numbering
@@ -268,22 +265,21 @@
 
     map.on('locationfound', function(e) {
       var myLocation = e.latlng;
-      if (selectedID) {
-        var data = selectedFile === 'colleges_edit.json' ? collegesData : cafesData;
-        var selectedFeature = data.features.find(function(feature) {
-          return feature.properties[selectedFile === 'colleges_edit.json' ? 'college_ID' : 'Cafe_ID'] == selectedID;
-        });
-        var destination = L.latLng(selectedFeature.geometry.coordinates[1], selectedFeature.geometry.coordinates[0]);
+      if (selectedCollege) {
+        var destination = L.latLng(selectedCollege.geometry.coordinates[1], selectedCollege.geometry.coordinates[0]);
 
+        // Remove previous routing control if it exists
         if (routingControl !== null) {
           routingControl.getPlan().setWaypoints([]);
           routingControl.remove();
         }
 
+        // Determine the travel mode
         var routerOptions = {
           profile: travelMode === 'walking' ? 'mapbox/walking' : 'mapbox/driving'
         };
 
+        // Add new routing control with draggable waypoints
         routingControl = L.Routing.control({
           waypoints: [
             L.Routing.waypoint(myLocation, {draggable: true}),
@@ -314,14 +310,20 @@
             show: false
           }
         }).on('routesfound', function(e) {
+          // Update directions whenever routes are found
           const routes = e.routes;
           if (routes.length > 0) {
             updateDirections(routes[0]);
           }
         }).addTo(map);
 
+        // Hide the default itinerary
         document.querySelector('.leaflet-routing-container').style.display = 'none';
+
+        // Show the directions container
         document.getElementById('directions').style.display = 'block';
+
+        // Fit the map to the calculated bounds
         var bounds = L.latLngBounds([myLocation, destination]);
         map.fitBounds(bounds);
       }
