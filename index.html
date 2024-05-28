@@ -429,7 +429,7 @@
 
     function findClosestFeature(userLocation, featureCollection) {
       var closestFeature = featureCollection[0];
-      var closestDistance = distance(userLocation, closestFeature);
+      var closestDistance = distance(userLocation, L.latLng(closestFeature.geometry.coordinates[1], closestFeature.geometry.coordinates[0]));
 
       featureCollection.forEach(function(feature) {
         var featureLocation = L.latLng(feature.geometry.coordinates[1], feature.geometry.coordinates[0]);
