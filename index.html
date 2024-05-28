@@ -98,6 +98,7 @@
     <option value="">Select your Destination</option>
     <option value="colleges">Colleges</option>
     <option value="cafes">Cafeterias</option>
+    <option value="mosques">Mosques</option>
   </select>
   <select id="collegeSelect" style="display: none;">
     <option value="">Select ID</option>
@@ -131,7 +132,8 @@
 
     var collegeMarkers = {};
     var cafeMarkers = {};
-    var collegesData, cafesData;
+    var mosqueMarkers = {};
+    var collegesData, cafesData, mosquesData;
 
     // Custom icon for colleges
     var collegeIcon = L.divIcon({
@@ -145,6 +147,15 @@
     // Custom icon for cafes
     var cafeIcon = L.divIcon({
       html: '<div style="background-color: yellow; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; color: white;"><i class="fas fa-utensils"></i></div>',
+      className: '',
+      iconSize: [32, 32],
+      iconAnchor: [16, 32],
+      popupAnchor: [0, -32]
+    });
+
+    // Custom icon for mosques
+    var mosqueIcon = L.divIcon({
+      html: '<div style="background-color: green; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; color: white;"><i class="fas fa-mosque"></i></div>',
       className: '',
       iconSize: [32, 32],
       iconAnchor: [16, 32],
@@ -175,6 +186,18 @@
       console.error("Error loading caf.json: ", textStatus, error);
     });
 
+    // Load mosques data
+    $.getJSON("mosques.json", function(Mosques) {
+      mosquesData = Mosques;
+      Mosques.features.forEach(function(feature) {
+        var latlng = L.latLng(feature.geometry.coordinates[1], feature.geometry.coordinates[0]);
+        var marker = L.marker(latlng, { icon: mosqueIcon }).bindPopup("Mosque: " + feature.properties.Mosque_loc);
+        mosqueMarkers[feature.properties.Mosque_loc] = marker;
+      });
+    }).fail(function(jqxhr, textStatus, error) {
+      console.error("Error loading mosques.json: ", textStatus, error);
+    });
+
     var selectedFeature = null;
     var routingControl = null; // To keep track of the routing control
     var selectedMarker = null; // To keep track of the selected marker
@@ -201,6 +224,10 @@
       } else if (selectedCategory === "cafes") {
         cafesData.features.forEach(function(feature) {
           $('#collegeSelect').append(new Option(feature.properties.Cafe_ID, feature.properties.Cafe_ID));
+        });
+      } else if (selectedCategory === "mosques") {
+        mosquesData.features.forEach(function(feature) {
+          $('#collegeSelect').append(new Option(feature.properties.Mosque_loc, feature.properties.Mosque_loc));
         });
       }
 
@@ -230,6 +257,11 @@
           return feature.properties.Cafe_ID == selectedId;
         });
         selectedMarker = cafeMarkers[selectedId];
+      } else if (selectedCategory === "mosques") {
+        selectedFeature = mosquesData.features.find(function(feature) {
+          return feature.properties.Mosque_loc == selectedId;
+        });
+        selectedMarker = mosqueMarkers[selectedId];
       }
 
       if (selectedFeature) {
@@ -263,6 +295,13 @@
       for (var id in cafeMarkers) {
         if (cafeMarkers.hasOwnProperty(id)) {
           map.removeLayer(cafeMarkers[id]);
+        }
+      }
+
+      // Remove all mosque markers
+      for (var id in mosqueMarkers) {
+        if (mosqueMarkers.hasOwnProperty(id)) {
+          map.removeLayer(mosqueMarkers[id]);
         }
       }
 
