@@ -179,6 +179,7 @@
     var routingControl = null; // To keep track of the routing control
     var selectedMarker = null; // To keep track of the selected marker
     var travelMode = 'walking';
+    var locationWatchId = null; // To keep track of the location watch
 
     $('.travelMode').click(function() {
       $('.travelMode').removeClass('active');
@@ -246,6 +247,9 @@
 
         // Hide the directions container initially
         document.getElementById('directions').style.display = 'none';
+
+        // Locate the user
+        locateUser();
       }
     });
 
@@ -274,12 +278,22 @@
       // Clear the directions container
       document.getElementById('directions').innerHTML = '';
       document.getElementById('directions').style.display = 'none';
+
+      // Clear location watch
+      if (locationWatchId !== null) {
+        navigator.geolocation.clearWatch(locationWatchId);
+        locationWatchId = null;
+      }
     }
 
     function locateUser() {
-      map.locate({ setView: false, maxZoom: 16, watch: true, enableHighAccuracy: true })
-        .on('locationfound', function(e) {
-          var myLocation = e.latlng;
+      if (locationWatchId !== null) {
+        navigator.geolocation.clearWatch(locationWatchId);
+      }
+
+      locationWatchId = navigator.geolocation.watchPosition(
+        function(position) {
+          var myLocation = L.latLng(position.coords.latitude, position.coords.longitude);
           if (selectedFeature) {
             var destination = L.latLng(selectedFeature.geometry.coordinates[1], selectedFeature.geometry.coordinates[0]);
 
@@ -334,10 +348,12 @@
             var bounds = L.latLngBounds([myLocation, destination]);
             map.fitBounds(bounds);
           }
-        })
-        .on('locationerror', function(e) {
-          handleLocationError(e);
-        });
+        },
+        function(error) {
+          handleLocationError(error);
+        },
+        { enableHighAccuracy: true, maximumAge: 0, timeout: 10000 }
+      );
     }
 
     function handleLocationError(e) {
