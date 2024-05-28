@@ -314,6 +314,7 @@
           serviceMarkers.push(marker);
         });
         map.fitBounds(bounds);
+        selectedFeature = features; // Set selectedFeature to all features of the selected service
       }
 
       // Clear travel mode selection
@@ -391,10 +392,10 @@
           if (selectedFeature && travelMode) {
             // Find the closest feature point to the user's location
             var closestFeature;
-            if (selectedFeature.geometry) {
-              closestFeature = selectedFeature;
-            } else {
+            if (Array.isArray(selectedFeature)) {
               closestFeature = findClosestFeature(myLocation, selectedFeature);
+            } else {
+              closestFeature = selectedFeature;
             }
 
             var destination = L.latLng(closestFeature.geometry.coordinates[1], closestFeature.geometry.coordinates[0]);
