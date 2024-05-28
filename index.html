@@ -336,7 +336,7 @@
           }
         })
         .on('locationerror', function(e) {
-          alert("Location access denied.");
+          alert("Location access denied. Please enable location services in your browser and refresh the page.");
         });
     }
 
@@ -366,6 +366,11 @@
         stepElement.innerText = `${i + 1}. ${step.text} (${stepDistance})`; // Added numbering
         directionsContainer.appendChild(stepElement);
       }
+    }
+
+    // Ensure the page is served over HTTPS
+    if (location.protocol !== 'https:') {
+      location.replace(`https:${location.href.substring(location.protocol.length)}`);
     }
   </script>
 </body>
