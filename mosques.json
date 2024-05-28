@@ -7,5 +7,5 @@
 {"type":"Feature","geometry":{"type":"Point","coordinates":[35.18114,31.9584]},"properties":{"Mosuqe_loc":"مصلى العلوم"}},
 {"type":"Feature","geometry":{"type":"Point","coordinates":[35.18291,31.96211]},"properties":{"Mosuqe_loc":"مصلى التمريض"}},
 {"type":"Feature","geometry":{"type":"Point","coordinates":[35.18368,31.96055]},"properties":{"Mosuqe_loc":"مصلى التربية"}},
-{"type":"Feature","geometry":{"type":"Point","coordinates":[35.18468,31.96136]},"properties":{"Mosuqe_loc":"مصلى IT"}}
+{"type":"Feature","geometry":{"type":"Point","coordinates":[35.18468,31.96136]},"properties":{"Mosuqe_loc":"IT مصلى"}}
 ]}
