@@ -137,41 +137,16 @@
     var serviceMarkers = {};
     var collegesData, cafesData, mosquesData, servicesData, uniqueServices;
 
-    // Custom icon for colleges
-    var collegeIcon = L.divIcon({
-      html: '<div style="background-color: pink; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; color: white;"><i class="fas fa-book-open"></i></div>',
-      className: '',
-      iconSize: [32, 32],
-      iconAnchor: [16, 32],
-      popupAnchor: [0, -32]
-    });
-
-    // Custom icon for cafes
-    var cafeIcon = L.divIcon({
-      html: '<div style="background-color: yellow; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; color: white;"><i class="fas fa-utensils"></i></div>',
-      className: '',
-      iconSize: [32, 32],
-      iconAnchor: [16, 32],
-      popupAnchor: [0, -32]
-    });
-
-    // Custom icon for mosques
-    var mosqueIcon = L.divIcon({
-      html: '<div style="background-color: green; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; color: white;"><i class="fas fa-mosque"></i></div>',
-      className: '',
-      iconSize: [32, 32],
-      iconAnchor: [16, 32],
-      popupAnchor: [0, -32]
-    });
-
-    // Custom icon for services
-    var serviceIcon = L.divIcon({
-      html: '<div style="background-color: blue; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; color: white;"><i class="fas fa-concierge-bell"></i></div>',
-      className: '',
-      iconSize: [32, 32],
-      iconAnchor: [16, 32],
-      popupAnchor: [0, -32]
-    });
+    // Custom icons for different services
+    var icons = {
+      "مبنى التسجيل": L.divIcon({ html: '<div style="background-color: red; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; color: white;"><i class="fas fa-building"></i></div>', className: '', iconSize: [32, 32], iconAnchor: [16, 32], popupAnchor: [0, -32] }),
+      "مركز الحاسوب": L.divIcon({ html: '<div style="background-color: blue; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; color: white;"><i class="fas fa-desktop"></i></div>', className: '', iconSize: [32, 32], iconAnchor: [16, 32], popupAnchor: [0, -32] }),
+      "مكتبة": L.divIcon({ html: '<div style="background-color: orange; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; color: white;"><i class="fas fa-book"></i></div>', className: '', iconSize: [32, 32], iconAnchor: [16, 32], popupAnchor: [0, -32] }),
+      "العيادة الطبية": L.divIcon({ html: '<div style="background-color: green; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; color: white;"><i class="fas fa-clinic-medical"></i></div>', className: '', iconSize: [32, 32], iconAnchor: [16, 32], popupAnchor: [0, -32] }),
+      "ATM": L.divIcon({ html: '<div style="background-color: purple; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; color: white;"><i class="fas fa-money-check-alt"></i></div>', className: '', iconSize: [32, 32], iconAnchor: [16, 32], popupAnchor: [0, -32] }),
+      "بنك فلسطين": L.divIcon({ html: '<div style="background-color: yellow; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; color: black;"><i class="fas fa-university"></i></div>', className: '', iconSize: [32, 32], iconAnchor: [16, 32], popupAnchor: [0, -32] }),
+      "مطبعة": L.divIcon({ html: '<div style="background-color: brown; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; color: white;"><i class="fas fa-print"></i></div>', className: '', iconSize: [32, 32], iconAnchor: [16, 32], popupAnchor: [0, -32] })
+    };
 
     // Load colleges data
     $.getJSON("colleges_edit.json", function(Colleges) {
@@ -302,7 +277,7 @@
           if (feature.properties.info) {
             popupContent += `<br>Info: ${feature.properties.info}`;
           }
-          var marker = L.marker(latlng, { icon: serviceIcon }).bindPopup(popupContent);
+          var marker = L.marker(latlng, { icon: icons[feature.properties.Services] }).bindPopup(popupContent);
           marker.addTo(map);
           marker.openPopup();
           bounds.extend(latlng);
