@@ -191,8 +191,8 @@
       mosquesData = Mosques;
       Mosques.features.forEach(function(feature) {
         var latlng = L.latLng(feature.geometry.coordinates[1], feature.geometry.coordinates[0]);
-        var marker = L.marker(latlng, { icon: mosqueIcon }).bindPopup("Mosque: " + feature.properties.Mosque_loc);
-        mosqueMarkers[feature.properties.Mosque_loc] = marker;
+        var marker = L.marker(latlng, { icon: mosqueIcon }).bindPopup("Mosque: " + feature.properties.Mosuqe_loc);
+        mosqueMarkers[feature.properties.Mosuqe_loc] = marker;
       });
     }).fail(function(jqxhr, textStatus, error) {
       console.error("Error loading mosques.json: ", textStatus, error);
@@ -227,7 +227,7 @@
         });
       } else if (selectedCategory === "mosques") {
         mosquesData.features.forEach(function(feature) {
-          $('#collegeSelect').append(new Option(feature.properties.Mosque_loc, feature.properties.Mosque_loc));
+          $('#collegeSelect').append(new Option(feature.properties.Mosuqe_loc, feature.properties.Mosuqe_loc));
         });
       }
 
@@ -259,7 +259,7 @@
         selectedMarker = cafeMarkers[selectedId];
       } else if (selectedCategory === "mosques") {
         selectedFeature = mosquesData.features.find(function(feature) {
-          return feature.properties.Mosque_loc == selectedId;
+          return feature.properties.Mosuqe_loc == selectedId;
         });
         selectedMarker = mosqueMarkers[selectedId];
       }
