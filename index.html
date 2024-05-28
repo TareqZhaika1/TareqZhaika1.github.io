@@ -135,7 +135,7 @@
     var cafeMarkers = {};
     var mosqueMarkers = {};
     var serviceMarkers = {};
-    var collegesData, cafesData, mosquesData, servicesData;
+    var collegesData, cafesData, mosquesData, servicesData, uniqueServices;
 
     // Custom icon for colleges
     var collegeIcon = L.divIcon({
@@ -212,7 +212,7 @@
     // Load services data
     $.getJSON("Services.json", function(Services) {
       servicesData = Services;
-      var uniqueServices = {};
+      uniqueServices = {};
 
       Services.features.forEach(function(feature) {
         var service = feature.properties.Services;
@@ -221,10 +221,6 @@
         }
         uniqueServices[service].push(feature);
       });
-
-      for (var service in uniqueServices) {
-        $('#collegeSelect').append(new Option(service, service));
-      }
     }).fail(function(jqxhr, textStatus, error) {
       console.error("Error loading Services.json: ", textStatus, error);
     });
@@ -298,8 +294,8 @@
         });
         selectedMarker = mosqueMarkers[selectedId];
       } else if (selectedCategory === "services") {
-        selectedFeature = uniqueServices[selectedId];
-        selectedFeature.forEach(function(feature) {
+        var features = uniqueServices[selectedId];
+        features.forEach(function(feature) {
           var latlng = L.latLng(feature.geometry.coordinates[1], feature.geometry.coordinates[0]);
           var marker = L.marker(latlng, { icon: serviceIcon }).bindPopup(`Service: ${feature.properties.Services} <br> Info: ${feature.properties.info}`);
           marker.addTo(map);
