@@ -339,18 +339,6 @@
       map.fitBounds(bounds);
     }
 
-    map.on('locationfound', function(e) {
-      var myLocation = e.latlng;
-      if (selectedFeature && travelMode) {
-        var destination = L.latLng(selectedFeature.geometry.coordinates[1], selectedFeature.geometry.coordinates[0]);
-        showRoute(myLocation, destination);
-      }
-    });
-
-    map.on('locationerror', function(e) {
-      alert("Location access denied.");
-    });
-
     function updateDirections(route) {
       const directionsContainer = document.getElementById('directions');
       directionsContainer.innerHTML = ''; // Clear previous directions
@@ -381,17 +369,18 @@
 
     function onLocationFound(e) {
       var myLocation = e.latlng;
-      if (selectedFeature) {
+      if (selectedFeature && travelMode) {
         var destination = L.latLng(selectedFeature.geometry.coordinates[1], selectedFeature.geometry.coordinates[0]);
-
-        // Update the routing control with the new location
-        if (routingControl !== null) {
-          routingControl.getPlan().setWaypoints([myLocation, destination]);
-        }
+        showRoute(myLocation, destination);
       }
     }
 
-    map.locate({ watch: true, setView: false, maxZoom: 16 }).on('locationfound', onLocationFound);
+    map.on('locationfound', onLocationFound);
+    map.on('locationerror', function(e) {
+      alert("Location access denied.");
+    });
+
+    map.locate({ watch: true, setView: false, maxZoom: 16 });
   </script>
 </body>
 </html>
