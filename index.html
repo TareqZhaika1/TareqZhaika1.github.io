@@ -99,6 +99,7 @@
     <option value="colleges">Colleges</option>
     <option value="cafes">Cafeterias</option>
     <option value="mosques">Mosques</option>
+    <option value="services">Services</option>
   </select>
   <select id="collegeSelect" style="display: none;">
     <option value="">Select ID</option>
@@ -133,7 +134,8 @@
     var collegeMarkers = {};
     var cafeMarkers = {};
     var mosqueMarkers = {};
-    var collegesData, cafesData, mosquesData;
+    var serviceMarkers = {};
+    var collegesData, cafesData, mosquesData, servicesData;
 
     // Custom icon for colleges
     var collegeIcon = L.divIcon({
@@ -156,6 +158,15 @@
     // Custom icon for mosques
     var mosqueIcon = L.divIcon({
       html: '<div style="background-color: green; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; color: white;"><i class="fas fa-mosque"></i></div>',
+      className: '',
+      iconSize: [32, 32],
+      iconAnchor: [16, 32],
+      popupAnchor: [0, -32]
+    });
+
+    // Custom icon for services
+    var serviceIcon = L.divIcon({
+      html: '<div style="background-color: blue; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; color: white;"><i class="fas fa-concierge-bell"></i></div>',
       className: '',
       iconSize: [32, 32],
       iconAnchor: [16, 32],
@@ -198,6 +209,26 @@
       console.error("Error loading mosques.json: ", textStatus, error);
     });
 
+    // Load services data
+    $.getJSON("Services.json", function(Services) {
+      servicesData = Services;
+      var uniqueServices = {};
+
+      Services.features.forEach(function(feature) {
+        var service = feature.properties.Services;
+        if (!uniqueServices[service]) {
+          uniqueServices[service] = [];
+        }
+        uniqueServices[service].push(feature);
+      });
+
+      for (var service in uniqueServices) {
+        $('#collegeSelect').append(new Option(service, service));
+      }
+    }).fail(function(jqxhr, textStatus, error) {
+      console.error("Error loading Services.json: ", textStatus, error);
+    });
+
     var selectedFeature = null;
     var routingControl = null; // To keep track of the routing control
     var selectedMarker = null; // To keep track of the selected marker
@@ -229,6 +260,10 @@
         mosquesData.features.forEach(function(feature) {
           $('#collegeSelect').append(new Option(feature.properties.Mosuqe_loc, feature.properties.Mosuqe_loc));
         });
+      } else if (selectedCategory === "services") {
+        for (var service in uniqueServices) {
+          $('#collegeSelect').append(new Option(service, service));
+        }
       }
 
       if (!selectedCategory) {
@@ -262,9 +297,17 @@
           return feature.properties.Mosuqe_loc == selectedId;
         });
         selectedMarker = mosqueMarkers[selectedId];
+      } else if (selectedCategory === "services") {
+        selectedFeature = uniqueServices[selectedId];
+        selectedFeature.forEach(function(feature) {
+          var latlng = L.latLng(feature.geometry.coordinates[1], feature.geometry.coordinates[0]);
+          var marker = L.marker(latlng, { icon: serviceIcon }).bindPopup(`Service: ${feature.properties.Services} <br> Info: ${feature.properties.info}`);
+          marker.addTo(map);
+          serviceMarkers[feature.properties.Services] = marker;
+        });
       }
 
-      if (selectedFeature) {
+      if (selectedFeature && selectedCategory !== "services") {
         var latlng = L.latLng(selectedFeature.geometry.coordinates[1], selectedFeature.geometry.coordinates[0]);
 
         // Add the selected marker to the map
@@ -302,6 +345,13 @@
       for (var id in mosqueMarkers) {
         if (mosqueMarkers.hasOwnProperty(id)) {
           map.removeLayer(mosqueMarkers[id]);
+        }
+      }
+
+      // Remove all service markers
+      for (var id in serviceMarkers) {
+        if (serviceMarkers.hasOwnProperty(id)) {
+          map.removeLayer(serviceMarkers[id]);
         }
       }
 
