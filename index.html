@@ -134,7 +134,7 @@
     var collegeMarkers = {};
     var cafeMarkers = {};
     var mosqueMarkers = {};
-    var serviceMarkers = {};
+    var serviceMarkers = [];
     var collegesData, cafesData, mosquesData, servicesData, uniqueServices;
 
     // Custom icons for different services
@@ -258,16 +258,19 @@
           return feature.properties.college_ID == selectedId;
         });
         selectedMarker = collegeMarkers[selectedId];
+        showMarker(selectedMarker);
       } else if (selectedCategory === "cafes") {
         selectedFeature = cafesData.features.find(function(feature) {
           return feature.properties.Cafe_ID == selectedId;
         });
         selectedMarker = cafeMarkers[selectedId];
+        showMarker(selectedMarker);
       } else if (selectedCategory === "mosques") {
         selectedFeature = mosquesData.features.find(function(feature) {
           return feature.properties.Mosuqe_loc == selectedId;
         });
         selectedMarker = mosqueMarkers[selectedId];
+        showMarker(selectedMarker);
       } else if (selectedCategory === "services") {
         var features = uniqueServices[selectedId];
         var bounds = new L.LatLngBounds();
@@ -281,28 +284,14 @@
           marker.addTo(map);
           marker.openPopup();
           bounds.extend(latlng);
-          serviceMarkers[feature.properties.Services] = marker;
+          serviceMarkers.push(marker);
         });
         map.fitBounds(bounds);
       }
 
-      if (selectedFeature && selectedCategory !== "services") {
-        var latlng = L.latLng(selectedFeature.geometry.coordinates[1], selectedFeature.geometry.coordinates[0]);
-
-        // Add the selected marker to the map
-        selectedMarker.addTo(map);
-
-        // Center the map on the selected marker and show popup
-        map.flyTo(latlng, 18);
-        selectedMarker.openPopup();
-
-        // Hide the directions container initially
-        document.getElementById('directions').style.display = 'none';
-
-        // Clear travel mode selection
-        travelMode = null;
-        $('.travelMode').removeClass('active');
-      }
+      // Clear travel mode selection
+      travelMode = null;
+      $('.travelMode').removeClass('active');
     });
 
     function clearMap() {
@@ -328,11 +317,10 @@
       }
 
       // Remove all service markers
-      for (var id in serviceMarkers) {
-        if (serviceMarkers.hasOwnProperty(id)) {
-          map.removeLayer(serviceMarkers[id]);
-        }
-      }
+      serviceMarkers.forEach(function(marker) {
+        map.removeLayer(marker);
+      });
+      serviceMarkers = [];
 
       // Remove the routing control
       if (routingControl !== null) {
@@ -352,6 +340,17 @@
       }
     }
 
+    function showMarker(marker) {
+      if (marker) {
+        marker.addTo(map);
+        map.flyTo(marker.getLatLng(), 18);
+        marker.openPopup();
+
+        // Hide the directions container initially
+        document.getElementById('directions').style.display = 'none';
+      }
+    }
+
     function locateUser() {
       if (locationWatchId !== null) {
         navigator.geolocation.clearWatch(locationWatchId);
@@ -363,7 +362,10 @@
           console.log("User location updated: ", myLocation);
 
           if (selectedFeature && travelMode) {
-            var destination = L.latLng(selectedFeature.geometry.coordinates[1], selectedFeature.geometry.coordinates[0]);
+            // Find the closest feature point to the user's location
+            var closestFeature = findClosestFeature(myLocation, selectedFeature);
+
+            var destination = L.latLng(closestFeature.geometry.coordinates[1], closestFeature.geometry.coordinates[0]);
 
             // Remove previous routing control if it exists
             if (routingControl !== null) {
@@ -423,6 +425,27 @@
         },
         { enableHighAccuracy: true, maximumAge: 0, timeout: 10000 }
       );
+    }
+
+    function findClosestFeature(userLocation, featureCollection) {
+      var closestFeature = featureCollection[0];
+      var closestDistance = distance(userLocation, closestFeature);
+
+      featureCollection.forEach(function(feature) {
+        var featureLocation = L.latLng(feature.geometry.coordinates[1], feature.geometry.coordinates[0]);
+        var featureDistance = distance(userLocation, featureLocation);
+
+        if (featureDistance < closestDistance) {
+          closestFeature = feature;
+          closestDistance = featureDistance;
+        }
+      });
+
+      return closestFeature;
+    }
+
+    function distance(latlng1, latlng2) {
+      return latlng1.distanceTo(latlng2);
     }
 
     function handleLocationError(e) {
