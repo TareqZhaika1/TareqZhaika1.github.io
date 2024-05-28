@@ -295,12 +295,20 @@
         selectedMarker = mosqueMarkers[selectedId];
       } else if (selectedCategory === "services") {
         var features = uniqueServices[selectedId];
+        var bounds = new L.LatLngBounds();
         features.forEach(function(feature) {
           var latlng = L.latLng(feature.geometry.coordinates[1], feature.geometry.coordinates[0]);
-          var marker = L.marker(latlng, { icon: serviceIcon }).bindPopup(`Service: ${feature.properties.Services} <br> Info: ${feature.properties.info}`);
+          var popupContent = `Service: ${feature.properties.Services}`;
+          if (feature.properties.info) {
+            popupContent += `<br>Info: ${feature.properties.info}`;
+          }
+          var marker = L.marker(latlng, { icon: serviceIcon }).bindPopup(popupContent);
           marker.addTo(map);
+          marker.openPopup();
+          bounds.extend(latlng);
           serviceMarkers[feature.properties.Services] = marker;
         });
+        map.fitBounds(bounds);
       }
 
       if (selectedFeature && selectedCategory !== "services") {
