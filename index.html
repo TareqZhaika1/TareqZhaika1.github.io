@@ -363,7 +363,12 @@
 
           if (selectedFeature && travelMode) {
             // Find the closest feature point to the user's location
-            var closestFeature = findClosestFeature(myLocation, selectedFeature);
+            var closestFeature;
+            if (selectedFeature.geometry) {
+              closestFeature = selectedFeature;
+            } else {
+              closestFeature = findClosestFeature(myLocation, selectedFeature);
+            }
 
             var destination = L.latLng(closestFeature.geometry.coordinates[1], closestFeature.geometry.coordinates[0]);
 
