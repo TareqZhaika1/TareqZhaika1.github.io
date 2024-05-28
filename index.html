@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <title>Birzeit University Campus</title>
-  <meta name="viewport" content="width=device=width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.6.0/dist/leaflet.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
   <style>
@@ -294,6 +294,8 @@
       locationWatchId = navigator.geolocation.watchPosition(
         function(position) {
           var myLocation = L.latLng(position.coords.latitude, position.coords.longitude);
+          console.log("User location updated: ", myLocation);
+
           if (selectedFeature) {
             var destination = L.latLng(selectedFeature.geometry.coordinates[1], selectedFeature.geometry.coordinates[0]);
 
@@ -335,6 +337,7 @@
               const routes = e.routes;
               if (routes.length > 0) {
                 updateDirections(routes[0]);
+                console.log("Routes found: ", routes[0]);
               }
             }).addTo(map);
 
