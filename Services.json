@@ -18,7 +18,7 @@
 {"type":"Feature","geometry":{"type":"Point","coordinates":[35.18434,31.96204]},"properties":{"Services":"Parking","info":"موقف سيارات المسرح"}},
 {"type":"Feature","geometry":{"type":"Point","coordinates":[35.18499,31.96204]},"properties":{"Services":"Parking","info":"موقف سيارات المدخل الشمالي"}},
 {"type":"Feature","geometry":{"type":"Point","coordinates":[35.17937,31.95892]},"properties":{"Services":"Parking","info":"موقف سيارات المدخل الغربي"}},
-{"type":"Feature","geometry":{"type":"Point","coordinates":[35.1827,31.95797]},"properties":{"Services":"Parking","info":"موقف سيارات الدراسات العلي"}},
+{"type":"Feature","geometry":{"type":"Point","coordinates":[35.1827,31.95797]},"properties":{"Services":"Parking","info":"موقف سيارات الدراسات العليا"}},
 {"type":"Feature","geometry":{"type":"Point","coordinates":[35.18062,31.95883]},"properties":{"Services":"Parking","info":"موقف سيارات الهندسة"}},
 {"type":"Feature","geometry":{"type":"Point","coordinates":[35.18322,31.96134]},"properties":{"Services":"Parking","info":"موقف سيارات التنمية"}},
 {"type":"Feature","geometry":{"type":"Point","coordinates":[35.18048,31.96014]},"properties":{"Services":"Parking","info":"موقف سيارات مشغل الهندسة"}},
