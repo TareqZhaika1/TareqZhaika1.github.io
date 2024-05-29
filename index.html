@@ -147,8 +147,8 @@
       "بنك فلسطين": L.divIcon({ html: '<div style="background-color: yellow; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; color: black;"><i class="fas fa-university"></i></div>', className: '', iconSize: [32, 32], iconAnchor: [16, 32], popupAnchor: [0, -32] }),
       "مطبعة": L.divIcon({ html: '<div style="background-color: brown; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; color: white;"><i class="fas fa-print"></i></div>', className: '', iconSize: [32, 32], iconAnchor: [16, 32], popupAnchor: [0, -32] }),
       "عمادة شؤون الطلب": L.divIcon({ html: '<div style="background-color: pink; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; color: white;"><i class="fas fa-users"></i></div>', className: '', iconSize: [32, 32], iconAnchor: [16, 32], popupAnchor: [0, -32] }),
-      "Parking": L.divIcon({ html: '<div style="background-color: gray; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; color: white;"><i class="fas fa-parking"></i></div>', className: '', iconSize: [32, 32], iconAnchor: [16, 32], popupAnchor: [0, -32] }),
-      "مبنى الرئاسة": L.divIcon({ html: '<div style="background-color: lightblue; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; color: black;"><i class="fas fa-user-tie"></i></div>', className: '', iconSize: [32, 32], iconAnchor: [16, 32], popupAnchor: [0, -32] })
+      "Parking": L.divIcon({ html: '<div style="background-color: gray; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; color white;"><i class="fas fa-parking"></i></div>', className: '', iconSize: [32, 32], iconAnchor: [16, 32], popupAnchor: [0, -32] }),
+      "مبنى الرئاسة": L.divIcon({ html: '<div style="background-color: lightblue; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; color black;"><i class="fas fa-user-tie"></i></div>', className: '', iconSize: [32, 32], iconAnchor: [16, 32], popupAnchor: [0, -32] })
     };
 
     // Custom icon for colleges
@@ -380,7 +380,7 @@
         marker.addTo(map);
         marker.openPopup();
         bounds.extend(latlng);
-                serviceMarkers.push(marker);
+        serviceMarkers.push(marker);
       });
       map.fitBounds(bounds);
 
@@ -529,14 +529,14 @@
       directionsContainer.appendChild(summaryElement);
 
       // Show only the next 3 steps
-      for (let i = 0; i < Math.min(route.instructions.length, 3); i++) {
-        const step = route.instructions[i];
-        const stepDistance = step.distance < 1000 ? `${step.distance.toFixed(0)} m` : `${(step.distance / 1000).toFixed(2)} km`; // Show distance in meters if less than 1000, otherwise in kilometers
+      const steps = route.instructions.slice(0, 3);
+      steps.forEach((step, i) => {
+        const stepDistance = step.distance < 1000 ? `${step.distance.toFixed(0)} m` : `${(step.distance / 1000).toFixed(2)} km`;
         const stepElement = document.createElement('div');
         stepElement.className = 'direction-step';
-        stepElement.innerText = `${i + 1}. ${step.text} (${stepDistance})`; // Added numbering
+        stepElement.innerText = `${i + 1}. ${step.text} (${stepDistance})`;
         directionsContainer.appendChild(stepElement);
-      }
+      });
     }
 
     // Ensure the page is served over HTTPS
@@ -546,4 +546,3 @@
   </script>
 </body>
 </html>
-
