@@ -145,35 +145,11 @@
       "العيادة الطبية": L.divIcon({ html: '<div style="background-color: green; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; color: white;"><i class="fas fa-clinic-medical"></i></div>', className: '', iconSize: [32, 32], iconAnchor: [16, 32], popupAnchor: [0, -32] }),
       "ATM": L.divIcon({ html: '<div style="background-color: purple; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; color: white;"><i class="fas fa-money-check-alt"></i></div>', className: '', iconSize: [32, 32], iconAnchor: [16, 32], popupAnchor: [0, -32] }),
       "بنك فلسطين": L.divIcon({ html: '<div style="background-color: yellow; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; color: black;"><i class="fas fa-university"></i></div>', className: '', iconSize: [32, 32], iconAnchor: [16, 32], popupAnchor: [0, -32] }),
-      "مطبعة": L.divIcon({ html: '<div style="background-color: brown; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; color: white;"><i class="fas fa-print"></i></div>', className: '', iconSize: [32, 32], iconAnchor: [16, 32], popupAnchor: [0, -32] })
+      "مطبعة": L.divIcon({ html: '<div style="background-color: brown; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; color: white;"><i class="fas fa-print"></i></div>', className: '', iconSize: [32, 32], iconAnchor: [16, 32], popupAnchor: [0, -32] }),
+      "Parking": L.divIcon({ html: '<div style="background-color: gray; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; color: white;"><i class="fas fa-parking"></i></div>', className: '', iconSize: [32, 32], iconAnchor: [16, 32], popupAnchor: [0, -32] }),
+      "عمادة شؤون الطلب": L.divIcon({ html: '<div style="background-color: cyan; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; color: black;"><i class="fas fa-user-friends"></i></div>', className: '', iconSize: [32, 32], iconAnchor: [16, 32], popupAnchor: [0, -32] }),
+      "مبنى الرئاسة": L.divIcon({ html: '<div style="background-color: magenta; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; color: white;"><i class="fas fa-building"></i></div>', className: '', iconSize: [32, 32], iconAnchor: [16, 32], popupAnchor: [0, -32] })
     };
-
-    // Custom icon for colleges
-    var collegeIcon = L.divIcon({
-      html: '<div style="background-color: pink; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; color: white;"><i class="fas fa-book-open"></i></div>',
-      className: '',
-      iconSize: [32, 32],
-      iconAnchor: [16, 32],
-      popupAnchor: [0, -32]
-    });
-
-    // Custom icon for cafes
-    var cafeIcon = L.divIcon({
-      html: '<div style="background-color: yellow; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; color: white;"><i class="fas fa-utensils"></i></div>',
-      className: '',
-      iconSize: [32, 32],
-      iconAnchor: [16, 32],
-      popupAnchor: [0, -32]
-    });
-
-    // Custom icon for mosques
-    var mosqueIcon = L.divIcon({
-      html: '<div style="background-color: green; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; color: white;"><i class="fas fa-mosque"></i></div>',
-      className: '',
-      iconSize: [32, 32],
-      iconAnchor: [16, 32],
-      popupAnchor: [0, -32]
-    });
 
     // Load colleges data
     $.getJSON("colleges_edit.json", function(Colleges) {
@@ -314,7 +290,8 @@
           serviceMarkers.push(marker);
         });
         map.fitBounds(bounds);
-        selectedFeature = features; // Set selectedFeature to all features of the selected service
+        // Find the closest feature to the user's location
+        locateUser(true);
       }
 
       // Clear travel mode selection
@@ -379,7 +356,7 @@
       }
     }
 
-    function locateUser() {
+    function locateUser(findClosestService = false) {
       if (locationWatchId !== null) {
         navigator.geolocation.clearWatch(locationWatchId);
       }
@@ -392,10 +369,10 @@
           if (selectedFeature && travelMode) {
             // Find the closest feature point to the user's location
             var closestFeature;
-            if (Array.isArray(selectedFeature)) {
-              closestFeature = findClosestFeature(myLocation, selectedFeature);
-            } else {
+            if (selectedFeature.geometry) {
               closestFeature = selectedFeature;
+            } else {
+              closestFeature = findClosestFeature(myLocation, selectedFeature);
             }
 
             var destination = L.latLng(closestFeature.geometry.coordinates[1], closestFeature.geometry.coordinates[0]);
@@ -451,6 +428,13 @@
             // Fit the map to the calculated bounds
             var bounds = L.latLngBounds([myLocation, destination]);
             map.fitBounds(bounds);
+          }
+
+          if (findClosestService) {
+            // Find the closest service feature to the user's location
+            var closestFeature = findClosestFeature(myLocation, selectedFeature);
+            var destination = L.latLng(closestFeature.geometry.coordinates[1], closestFeature.geometry.coordinates[0]);
+            map.flyTo(destination, 18);
           }
         },
         function(error) {
