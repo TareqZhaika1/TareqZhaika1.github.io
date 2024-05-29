@@ -78,17 +78,49 @@
       font-weight: bold;
       margin-bottom: 10px;
     }
-    #collegeSelect {
+    #collegeSelect, #selectDestination {
       position: absolute;
       top: 10px;
-      right: 30px; /* Adjusted position */
       z-index: 1000;
+      background: white;
+      padding: 5px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    #collegeSelect {
+      right: 20px;
     }
     #selectDestination {
-      position: absolute;
-      top: 10px;
-      right: 170px; /* Adjusted position */
-      z-index: 1000;
+      right: 200px;
+    }
+    @media (max-width: 768px) {
+      #travelModeContainer {
+        top: 10px;
+        right: 10px;
+        padding: 5px;
+        flex-direction: column;
+      }
+      .travelMode img {
+        width: 24px;
+        height: 24px;
+      }
+      .travelMode span {
+        font-size: 10px;
+      }
+      #directions {
+        top: 80px;
+        right: 10px;
+        width: 90%;
+      }
+      #collegeSelect, #selectDestination {
+        top: 10px;
+        right: 10px;
+        width: calc(50% - 20px);
+        margin-right: 10px;
+      }
+      #selectDestination {
+        right: calc(50% + 10px);
+      }
     }
   </style>
 </head>
@@ -147,8 +179,8 @@
       "بنك فلسطين": L.divIcon({ html: '<div style="background-color: yellow; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; color: black;"><i class="fas fa-university"></i></div>', className: '', iconSize: [32, 32], iconAnchor: [16, 32], popupAnchor: [0, -32] }),
       "مطبعة": L.divIcon({ html: '<div style="background-color: brown; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; color: white;"><i class="fas fa-print"></i></div>', className: '', iconSize: [32, 32], iconAnchor: [16, 32], popupAnchor: [0, -32] }),
       "عمادة شؤون الطلب": L.divIcon({ html: '<div style="background-color: pink; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; color: white;"><i class="fas fa-users"></i></div>', className: '', iconSize: [32, 32], iconAnchor: [16, 32], popupAnchor: [0, -32] }),
-      "Parking": L.divIcon({ html: '<div style="background-color: gray; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; color white;"><i class="fas fa-parking"></i></div>', className: '', iconSize: [32, 32], iconAnchor: [16, 32], popupAnchor: [0, -32] }),
-      "مبنى الرئاسة": L.divIcon({ html: '<div style="background-color: lightblue; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; color black;"><i class="fas fa-user-tie"></i></div>', className: '', iconSize: [32, 32], iconAnchor: [16, 32], popupAnchor: [0, -32] })
+      "Parking": L.divIcon({ html: '<div style="background-color: gray; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; color: white;"><i class="fas fa-parking"></i></div>', className: '', iconSize: [32, 32], iconAnchor: [16, 32], popupAnchor: [0, -32] }),
+      "مبنى الرئاسة": L.divIcon({ html: '<div style="background-color: lightblue; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; color: black;"><i class="fas fa-user-tie"></i></div>', className: '', iconSize: [32, 32], iconAnchor: [16, 32], popupAnchor: [0, -32] })
     };
 
     // Custom icon for colleges
