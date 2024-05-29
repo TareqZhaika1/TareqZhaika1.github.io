@@ -26,6 +26,6 @@
 {"type":"Feature","geometry":{"type":"Point","coordinates":[35.18388,31.96134]},"properties":{"Services":"Parking","info":"موقف سيارات الاعلام"}},
 {"type":"Feature","geometry":{"type":"Point","coordinates":[35.18192,31.96254]},"properties":{"Services":"Parking","info":"موقف سيارات الفنون"}},
 {"type":"Feature","geometry":{"type":"Point","coordinates":[35.1834,31.9603]},"properties":{"Services":"Parking","info":"موقف سيارات التربية"}},
-{"type":"Feature","geometry":{"type":"Point","coordinates":[35.18195,31.95972]},"properties":{"Services":"عمادة شؤون الطلب","info":""}},
+{"type":"Feature","geometry":{"type":"Point","coordinates":[35.18195,31.95972]},"properties":{"Services":"عمادة شؤون الطلبة","info":""}},
 {"type":"Feature","geometry":{"type":"Point","coordinates":[35.18319,31.95931]},"properties":{"Services":"مبنى الرئاسة","info":""}}
 ]}
