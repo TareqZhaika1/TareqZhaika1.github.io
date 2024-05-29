@@ -146,12 +146,11 @@
       "ATM": L.divIcon({ html: '<div style="background-color: purple; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; color: white;"><i class="fas fa-money-check-alt"></i></div>', className: '', iconSize: [32, 32], iconAnchor: [16, 32], popupAnchor: [0, -32] }),
       "بنك فلسطين": L.divIcon({ html: '<div style="background-color: yellow; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; color: black;"><i class="fas fa-university"></i></div>', className: '', iconSize: [32, 32], iconAnchor: [16, 32], popupAnchor: [0, -32] }),
       "مطبعة": L.divIcon({ html: '<div style="background-color: brown; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; color: white;"><i class="fas fa-print"></i></div>', className: '', iconSize: [32, 32], iconAnchor: [16, 32], popupAnchor: [0, -32] }),
-      "Parking": L.divIcon({ html: '<div style="background-color: gray; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; color: white;"><i class="fas fa-parking"></i></div>', className: '', iconSize: [32, 32], iconAnchor: [16, 32], popupAnchor: [0, -32] }),
-      "Food Court": L.divIcon({ html: '<div style="background-color: pink; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; color: white;"><i class="fas fa-utensils"></i></div>', className: '', iconSize: [32, 32], iconAnchor: [16, 32], popupAnchor: [0, -32] }),
-      "Dormitory": L.divIcon({ html: '<div style="background-color: blueviolet; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; color: white;"><i class="fas fa-bed"></i></div>', className: '', iconSize: [32, 32], iconAnchor: [16, 32], popupAnchor: [0, -32] })
+      "عمادة شؤون الطلب": L.divIcon({ html: '<div style="background-color: pink; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; color: white;"><i class="fas fa-users"></i></div>', className: '', iconSize: [32, 32], iconAnchor: [16, 32], popupAnchor: [0, -32] }),
+      "مبنى الرئاسة": L.divIcon({ html: '<div style="background-color: lightblue; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; color: black;"><i class="fas fa-user-tie"></i></div>', className: '', iconSize: [32, 32], iconAnchor: [16, 32], popupAnchor: [0, -32] })
     };
 
-    // Custom icons for colleges, cafes, and mosques
+    // Custom icon for colleges
     var collegeIcon = L.divIcon({
       html: '<div style="background-color: pink; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; color: white;"><i class="fas fa-book-open"></i></div>',
       className: '',
@@ -160,6 +159,7 @@
       popupAnchor: [0, -32]
     });
 
+    // Custom icon for cafes
     var cafeIcon = L.divIcon({
       html: '<div style="background-color: yellow; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; color: white;"><i class="fas fa-utensils"></i></div>',
       className: '',
@@ -168,8 +168,9 @@
       popupAnchor: [0, -32]
     });
 
+    // Custom icon for mosques
     var mosqueIcon = L.divIcon({
-      html: '<div style="background-color: green; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; color: white;"><i class="fas fa-mosque"></i></div>',
+      html: '<div style="background-color: lightgreen; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; color: white;"><i class="fas fa-mosque"></i></div>',
       className: '',
       iconSize: [32, 32],
       iconAnchor: [16, 32],
@@ -239,7 +240,7 @@
       $(this).addClass('active');
       travelMode = $(this).data('mode');
       if (selectedFeature) {
-        locateUser(true); // Pass true to indicate navigation is required
+        locateUser(true);
       }
     });
 
@@ -381,9 +382,12 @@
         serviceMarkers.push(marker);
       });
       map.fitBounds(bounds);
+
+      // Hide the directions container initially
+      document.getElementById('directions').style.display = 'none';
     }
 
-    function locateUser(navigate) {
+    function locateUser(isNavigationActive) {
       if (locationWatchId !== null) {
         navigator.geolocation.clearWatch(locationWatchId);
       }
@@ -393,7 +397,8 @@
           var myLocation = L.latLng(position.coords.latitude, position.coords.longitude);
           console.log("User location updated: ", myLocation);
 
-          if (selectedFeature && travelMode) {
+          if (isNavigationActive && selectedFeature && travelMode) {
+            // Find the closest feature point to the user's location
             var closestFeature;
             if (Array.isArray(selectedFeature)) {
               closestFeature = findClosestFeature(myLocation, selectedFeature);
@@ -403,9 +408,57 @@
 
             var destination = L.latLng(closestFeature.geometry.coordinates[1], closestFeature.geometry.coordinates[0]);
 
-            if (navigate) {
-              navigateToDestination(myLocation, destination);
+            // Remove previous routing control if it exists
+            if (routingControl !== null) {
+              routingControl.getPlan().setWaypoints([]);
+              routingControl.remove();
             }
+
+            // Determine the travel mode
+            var routerOptions = {
+              profile: travelMode === 'walking' ? 'mapbox/walking' : 'mapbox/driving'
+            };
+
+            // Add new routing control with draggable waypoints
+            routingControl = L.Routing.control({
+              waypoints: [
+                L.Routing.waypoint(myLocation, { draggable: false }),
+                L.Routing.waypoint(destination, { draggable: false })
+              ],
+              router: L.Routing.mapbox('pk.eyJ1IjoidGFyZXF6aGFpa2EiLCJhIjoiY2x3cDZ4b2VnMWk0dTJxczFmdXE0Y3MwcCJ9.yWtxunGkYaYZDtvjtAt-ww', routerOptions),
+              createMarker: function(i, waypoint) {
+                if (i === 0) {
+                  return L.marker(waypoint.latLng, { draggable: false, icon: L.icon({ iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.6.0/images/marker-icon.png', iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.6.0/images/marker-shadow.png', shadowSize: [41, 41] }) });
+                }
+              },
+              routeWhileDragging: false,
+              showAlternatives: false,
+              lineOptions: {
+                addWaypoints: false
+              },
+              // Remove the default itinerary
+              itinerary: {
+                containerClassName: 'custom-itinerary',
+                show: false
+              }
+            }).on('routesfound', function(e) {
+              // Update directions whenever routes are found
+              const routes = e.routes;
+              if (routes.length > 0) {
+                updateDirections(routes[0]);
+                console.log("Routes found: ", routes[0]);
+              }
+            }).addTo(map);
+
+            // Hide the default itinerary
+            document.querySelector('.leaflet-routing-container').style.display = 'none';
+
+            // Show the directions container
+            document.getElementById('directions').style.display = 'block';
+
+            // Fit the map to the calculated bounds
+            var bounds = L.latLngBounds([myLocation, destination]);
+            map.fitBounds(bounds);
           }
         },
         function(error) {
@@ -413,50 +466,6 @@
         },
         { enableHighAccuracy: true, maximumAge: 0, timeout: 10000 }
       );
-    }
-
-    function navigateToDestination(myLocation, destination) {
-      if (routingControl !== null) {
-        routingControl.getPlan().setWaypoints([]);
-        routingControl.remove();
-      }
-
-      var routerOptions = {
-        profile: travelMode === 'walking' ? 'mapbox/walking' : 'mapbox/driving'
-      };
-
-      routingControl = L.Routing.control({
-        waypoints: [
-          L.Routing.waypoint(myLocation, { draggable: false }),
-          L.Routing.waypoint(destination, { draggable: false })
-        ],
-        router: L.Routing.mapbox('pk.eyJ1IjoidGFyZXF6aGFpa2EiLCJhIjoiY2x3cDZ4b2VnMWk0dTJxczFmdXE0Y3MwcCJ9.yWtxunGkYaYZDtvjtAt-ww', routerOptions),
-        createMarker: function(i, waypoint) {
-          if (i === 0) {
-            return L.marker(waypoint.latLng, { draggable: false, icon: L.icon({ iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.6.0/images/marker-icon.png', iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.6.0/images/marker-shadow.png', shadowSize: [41, 41] }) });
-          }
-        },
-        routeWhileDragging: false,
-        showAlternatives: false,
-        lineOptions: {
-          addWaypoints: false
-        },
-        itinerary: {
-          containerClassName: 'custom-itinerary',
-          show: false
-        }
-      }).on('routesfound', function(e) {
-        const routes = e.routes;
-        if (routes.length > 0) {
-          updateDirections(routes[0]);
-          console.log("Routes found: ", routes[0]);
-        }
-      }).addTo(map);
-
-      document.querySelector('.leaflet-routing-container').style.display = 'none';
-      document.getElementById('directions').style.display = 'block';
-      var bounds = L.latLngBounds([myLocation, destination]);
-      map.fitBounds(bounds);
     }
 
     function findClosestFeature(userLocation, featureCollection) {
