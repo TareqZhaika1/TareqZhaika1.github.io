@@ -22,15 +22,16 @@
     }
     #travelModeContainer {
       position: absolute;
-      top: 50px;
-      right: 20px;
+      top: 10px;
+      right: 10px;
       z-index: 1000;
       background: white;
-      padding: 10px;
+      padding: 5px;
       border-radius: 8px;
       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
       display: flex;
-      gap: 10px;
+      gap: 5px;
+      flex-direction: column;
     }
     .travelMode {
       display: flex;
@@ -40,27 +41,27 @@
       padding: 5px;
     }
     .travelMode img {
-      width: 32px;
-      height: 32px;
+      width: 24px;
+      height: 24px;
     }
     .travelMode span {
-      font-size: 12px;
-      margin-top: 5px;
+      font-size: 10px;
+      margin-top: 3px;
     }
     .travelMode.active {
       border-bottom: 2px solid blue;
     }
     #directions {
       position: absolute;
-      top: 130px;
-      right: 20px;
+      top: 70px;
+      right: 10px;
       z-index: 1000;
       background-color: rgba(255, 255, 255, 0.9);
       padding: 10px;
       border-radius: 8px;
-      max-height: 300px;
+      max-height: 200px;
       overflow-y: auto;
-      width: 300px;
+      width: calc(100% - 20px);
       display: none; /* Hide initially */
     }
     .direction-step {
@@ -88,38 +89,37 @@
       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
     #collegeSelect {
-      right: 20px;
+      right: 10px;
     }
     #selectDestination {
-      right: 200px;
+      left: 10px;
     }
-    @media (max-width: 768px) {
+    @media (min-width: 769px) {
       #travelModeContainer {
-        top: 10px;
-        right: 10px;
-        padding: 5px;
-        flex-direction: column;
+        top: 50px;
+        right: 20px;
+        flex-direction: row;
+        gap: 10px;
       }
       .travelMode img {
-        width: 24px;
-        height: 24px;
+        width: 32px;
+        height: 32px;
       }
       .travelMode span {
-        font-size: 10px;
+        font-size: 12px;
       }
       #directions {
-        top: 80px;
-        right: 10px;
-        width: 90%;
+        top: 130px;
+        right: 20px;
+        width: 300px;
       }
       #collegeSelect, #selectDestination {
         top: 10px;
-        right: 10px;
-        width: calc(50% - 20px);
-        margin-right: 10px;
+        right: 20px;
+        width: 200px;
       }
       #selectDestination {
-        right: calc(50% + 10px);
+        right: 240px;
       }
     }
   </style>
@@ -176,7 +176,7 @@
       "مكتبة": L.divIcon({ html: '<div style="background-color: orange; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; color: white;"><i class="fas fa-book"></i></div>', className: '', iconSize: [32, 32], iconAnchor: [16, 32], popupAnchor: [0, -32] }),
       "العيادة الطبية": L.divIcon({ html: '<div style="background-color: green; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; color: white;"><i class="fas fa-clinic-medical"></i></div>', className: '', iconSize: [32, 32], iconAnchor: [16, 32], popupAnchor: [0, -32] }),
       "ATM": L.divIcon({ html: '<div style="background-color: purple; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; color: white;"><i class="fas fa-money-check-alt"></i></div>', className: '', iconSize: [32, 32], iconAnchor: [16, 32], popupAnchor: [0, -32] }),
-      "بنك فلسطين": L.divIcon({ html: '<div style="background-color: yellow; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; color: black;"><i class="fas fa-university"></i></div>', className: '', iconSize: [32, 32], iconAnchor: [16, 32], popupAnchor: [0, -32] }),
+            "بنك فلسطين": L.divIcon({ html: '<div style="background-color: yellow; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; color: black;"><i class="fas fa-university"></i></div>', className: '', iconSize: [32, 32], iconAnchor: [16, 32], popupAnchor: [0, -32] }),
       "مطبعة": L.divIcon({ html: '<div style="background-color: brown; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; color: white;"><i class="fas fa-print"></i></div>', className: '', iconSize: [32, 32], iconAnchor: [16, 32], popupAnchor: [0, -32] }),
       "عمادة شؤون الطلب": L.divIcon({ html: '<div style="background-color: pink; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; color: white;"><i class="fas fa-users"></i></div>', className: '', iconSize: [32, 32], iconAnchor: [16, 32], popupAnchor: [0, -32] }),
       "Parking": L.divIcon({ html: '<div style="background-color: gray; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; color: white;"><i class="fas fa-parking"></i></div>', className: '', iconSize: [32, 32], iconAnchor: [16, 32], popupAnchor: [0, -32] }),
@@ -578,3 +578,4 @@
   </script>
 </body>
 </html>
+
