@@ -235,7 +235,7 @@
 
         var imageUrl = imageMap[feature.properties.college_ID];
         if (imageUrl) {
-          popupContent += `<br><img src="https://github.com/TareqZhaika1/TareqZhaika1.github.io/blob/main/${imageUrl}?raw=true" alt="${feature.properties.college_ID}" style="width:100px;height:auto;">`;
+          popupContent += `<br><img src="https://github.com/TareqZhaika1/TareqZhaika1.github.io/blob/main/${imageUrl}?raw=true" alt="${feature.properties.college_ID}" style="width:200px;height:auto;">`;
         }
 
         var marker = L.marker(latlng, { icon: collegeIcon }).bindPopup(popupContent);
