@@ -215,7 +215,30 @@
       collegesData = Colleges;
       Colleges.features.forEach(function(feature) {
         var latlng = L.latLng(feature.geometry.coordinates[1], feature.geometry.coordinates[0]);
-        var marker = L.marker(latlng, { icon: collegeIcon }).bindPopup("College: " + feature.properties.college_ID);
+        var popupContent = "College: " + feature.properties.college_ID;
+        
+        if (feature.properties.info) {
+          popupContent += "<br>Info: " + feature.properties.info;
+        }
+        
+        var imageMap = {
+          "Alsadik": "11.jpg",
+          "Bamieh": "12.jpg",
+          "Aggad": "14.jpg",
+          "SCI": "15.jpg",
+          "Al.Juraysi": "18.jpg",
+          "A.Shaheen": "2.jpg",
+          "Aweidah": "21.jpg",
+          "Khoury": "4.jpg",
+          "NPH": "7.jpg"
+        };
+
+        var imageUrl = imageMap[feature.properties.college_ID];
+        if (imageUrl) {
+          popupContent += `<br><img src="https://github.com/yourusername/yourrepository/raw/main/${imageUrl}" alt="${feature.properties.college_ID}" style="width:100px;height:auto;">`;
+        }
+
+        var marker = L.marker(latlng, { icon: collegeIcon }).bindPopup(popupContent);
         collegeMarkers[feature.properties.college_ID] = marker;
       });
     }).fail(function(jqxhr, textStatus, error) {
