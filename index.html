@@ -43,6 +43,7 @@
       color: #555;
       background: rgba(255, 255, 255, 0.8);
       margin-bottom: 10px;
+      margin-top: 20px; /* Moved down */
     }
     .legend h4 {
       margin: 0 0 5px;
@@ -69,6 +70,17 @@
     #fullScreenBtn {
       position: absolute;
       top: 10px;
+      right: 50px; /* Adjusted position to accommodate layer icon */
+      z-index: 1000;
+      background: white;
+      padding: 10px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      cursor: pointer;
+    }
+    #layerControlBtn {
+      position: absolute;
+      top: 10px;
       right: 10px;
       z-index: 1000;
       background: white;
@@ -79,7 +91,7 @@
     }
     #travelModeContainer {
       position: absolute;
-      top: 70px;
+      top: 90px; /* Adjusted position */
       right: 10px;
       z-index: 1000;
       background: white;
@@ -109,7 +121,7 @@
     }
     #directions {
       position: absolute;
-      top: 140px;
+      top: 160px; /* Adjusted position */
       right: 10px;
       z-index: 1000;
       background-color: rgba(255, 255, 255, 0.9);
@@ -168,11 +180,8 @@
     <select id="collegeSelect" style="display: none;">
       <option value="">Select ID</option>
     </select>
-    <select id="mapSelect">
-      <option value="esri">Esri World Imagery</option>
-      <option value="thunderforest">Thunderforest Mobile Atlas</option>
-    </select>
   </div>
+  <div id="layerControlBtn"><i class="fas fa-layer-group"></i></div>
   <div id="fullScreenBtn"><i class="fas fa-expand"></i></div>
   <div id="travelModeContainer">
     <div id="walkingMode" class="travelMode" data-mode="walking">
@@ -413,14 +422,14 @@
       $('.travelMode').removeClass('active');
     });
 
-    $('#mapSelect').change(function() {
-      var selectedMap = $(this).val();
-      if (selectedMap === "esri") {
-        map.addLayer(Esri_WorldImagery);
-        map.removeLayer(Thunderforest_MobileAtlas);
-      } else if (selectedMap === "thunderforest") {
+    $('#layerControlBtn').click(function() {
+      var currentLayer = map.hasLayer(Esri_WorldImagery) ? 'esri' : 'thunderforest';
+      if (currentLayer === 'esri') {
         map.addLayer(Thunderforest_MobileAtlas);
         map.removeLayer(Esri_WorldImagery);
+      } else {
+        map.addLayer(Esri_WorldImagery);
+        map.removeLayer(Thunderforest_MobileAtlas);
       }
     });
 
