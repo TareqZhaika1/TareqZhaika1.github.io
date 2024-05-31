@@ -11,56 +11,11 @@
       margin: 0;
       height: 100vh;
       width: 100%;
-      display: flex;
       font-family: Arial, sans-serif;
     }
-    #sidebar {
-      width: 300px;
-      background-color: #f8f9fa;
-      padding: 15px;
-      border-right: 1px solid #ddd;
-      overflow-y: auto;
-      transition: width 0.3s;
-      position: relative;
-    }
-    #sidebar.collapsed {
-      width: 50px;
-    }
-    #sidebar h2 {
-      font-size: 20px;
-      margin: 0 0 10px;
-    }
-    #sidebar h3 {
-      font-size: 16px;
-      margin: 10px 0;
-    }
-    #sidebar .category {
-      margin-bottom: 10px;
-    }
-    #sidebar .category ul {
-      list-style: none;
-      padding: 0;
-    }
-    #sidebar .category ul li {
-      margin-bottom: 5px;
-    }
-    #sidebar .toggle-btn {
-      position: absolute;
-      top: 10px;
-      right: -25px;
-      background-color: #007bff;
-      color: #fff;
-      padding: 5px 10px;
-      cursor: pointer;
-      border-radius: 3px;
-      transition: right 0.3s;
-    }
-    #sidebar.collapsed .toggle-btn {
-      right: -25px;
-    }
     #map {
-      flex: 1;
-      position: relative;
+      height: 100%;
+      width: 100%;
     }
     #travelModeContainer {
       position: absolute;
@@ -121,6 +76,8 @@
       bottom: 10px;
       right: 10px;
       z-index: 1000;
+      background: none !important;
+      border: none !important;
     }
     .summary {
       font-weight: bold;
@@ -129,8 +86,6 @@
     .legend {
       padding: 6px 8px;
       font: 14px/16px Arial, Helvetica, sans-serif;
-      background: white;
-      background: rgba(255, 255, 255, 0.8);
       box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
       border-radius: 5px;
       line-height: 24px;
@@ -138,6 +93,8 @@
       display: flex;
       flex-direction: column;
       align-items: flex-start;
+      background: none;
+      border: none;
     }
     .legend h4 {
       margin: 0 0 5px;
@@ -163,49 +120,25 @@
       height: 32px;
       border-radius: 50%;
       margin-right: 8px;
+      color: white;
     }
     .legend-text {
       font-size: 14px;
     }
+    #fullScreenBtn {
+      position: absolute;
+      top: 60px;
+      right: 20px;
+      z-index: 1000;
+      background: white;
+      padding: 10px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
-  <div id="sidebar">
-    <div class="toggle-btn" onclick="toggleSidebar()">☰</div>
-    <h2>Categories</h2>
-    <div class="category">
-      <h3>Destinations</h3>
-      <select id="selectDestination">
-        <option value="">Select your Destination</option>
-        <option value="colleges">Colleges</option>
-        <option value="cafes">Cafeterias</option>
-        <option value="mosques">Mosques</option>
-        <option value="services">Services</option>
-      </select>
-      <select id="collegeSelect" style="display: none;">
-        <option value="">Select ID</option>
-      </select>
-    </div>
-    <div class="legend">
-      <h4>Legend</h4>
-      <div class="legend-item">
-        <div class="legend-icon" style="background-color: pink;"><i class="fas fa-book-open" style="color: white;"></i></div>
-        <div class="legend-text">Colleges</div>
-      </div>
-      <div class="legend-item">
-        <div class="legend-icon" style="background-color: yellow;"><i class="fas fa-utensils" style="color: white;"></i></div>
-        <div class="legend-text">Cafeterias</div>
-      </div>
-      <div class="legend-item">
-        <div class="legend-icon" style="background-color: lightgreen;"><i class="fas fa-mosque" style="color: white;"></i></div>
-        <div class="legend-text">Mosques</div>
-      </div>
-      <div class="legend-item">
-        <div class="legend-icon" style="background-color: red;"><i class="fas fa-building" style="color: white;"></i></div>
-        <div class="legend-text">Services</div>
-      </div>
-    </div>
-  </div>
   <div id="map"></div>
   <div id="travelModeContainer">
     <div id="walkingMode" class="travelMode" data-mode="walking">
@@ -218,6 +151,7 @@
     </div>
   </div>
   <div id="directions"></div>
+  <div id="fullScreenBtn">Full Screen</div>
   <script src="https://unpkg.com/leaflet@1.6.0/dist/leaflet.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-routing-machine/3.2.12/leaflet-routing-machine.js"></script>
@@ -232,7 +166,21 @@
 
     var Esri_WorldImagery = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
       attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
-    }).addTo(map);
+    });
+
+    var Thunderforest_MobileAtlas = L.tileLayer('https://{s}.tile.thunderforest.com/mobile-atlas/{z}/{x}/{y}.png?apikey={apikey}', {
+      attribution: '&copy; <a href="http://www.thunderforest.com/">Thunderforest</a>, &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+      apikey: 'YOUR_API_KEY',
+      maxZoom: 22
+    });
+
+    const baseMaps = {
+      "Esri World Imagery": Esri_WorldImagery,
+      "Thunderforest Mobile Atlas": Thunderforest_MobileAtlas
+    };
+
+    L.control.layers(baseMaps).addTo(map);
+    Esri_WorldImagery.addTo(map);
 
     L.control.scale({ position: 'bottomright', metric: true, imperial: false }).addTo(map);
 
@@ -244,21 +192,21 @@
 
     // Custom icons for different services
     var icons = {
-      "مبنى التسجيل": L.divIcon({ html: '<div style="background-color: red; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; color: white;"><i class="fas fa-building"></i></div>', className: '', iconSize: [32, 32], iconAnchor: [16, 32], popupAnchor: [0, -32] }),
-      "مركز الحاسوب": L.divIcon({ html: '<div style="background-color: blue; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; color: white;"><i class="fas fa-desktop"></i></div>', className: '', iconSize: [32, 32], iconAnchor: [16, 32], popupAnchor: [0, -32] }),
-      "مكتبة": L.divIcon({ html: '<div style="background-color: orange; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; color: white;"><i class="fas fa-book"></i></div>', className: '', iconSize: [32, 32], iconAnchor: [16, 32], popupAnchor: [0, -32] }),
-      "العيادة الطبية": L.divIcon({ html: '<div style="background-color: green; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; color: white;"><i class="fas fa-clinic-medical"></i></div>', className: '', iconSize: [32, 32], iconAnchor: [16, 32], popupAnchor: [0, -32] }),
-      "ATM": L.divIcon({ html: '<div style="background-color: purple; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; color: white;"><i class="fas fa-money-check-alt"></i></div>', className: '', iconSize: [32, 32], iconAnchor: [16, 32], popupAnchor: [0, -32] }),
-      "بنك فلسطين": L.divIcon({ html: '<div style="background-color: yellow; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; color: black;"><i class="fas fa-university"></i></div>', className: '', iconSize: [32, 32], iconAnchor: [16, 32], popupAnchor: [0, -32] }),
-      "مطبعة": L.divIcon({ html: '<div style="background-color: brown; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; color: white;"><i class="fas fa-print"></i></div>', className: '', iconSize: [32, 32], iconAnchor: [16, 32], popupAnchor: [0, -32] }),
-      "عمادة شؤون الطلب": L.divIcon({ html: '<div style="background-color: pink; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; color: white;"><i class="fas fa-users"></i></div>', className: '', iconSize: [32, 32], iconAnchor: [16, 32], popupAnchor: [0, -32] }),
-      "Parking": L.divIcon({ html: '<div style="background-color: gray; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; color: white;"><i class="fas fa-parking"></i></div>', className: '', iconSize: [32, 32], iconAnchor: [16, 32], popupAnchor: [0, -32] }),
-      "مبنى الرئاسة": L.divIcon({ html: '<div style="background-color: lightblue; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; color: black;"><i class="fas fa-user-tie"></i></div>', className: '', iconSize: [32, 32], iconAnchor: [16, 32], popupAnchor: [0, -32] })
+      "مبنى التسجيل": L.divIcon({ html: '<div style="background-color: red; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;"><i class="fas fa-building" style="color: white;"></i></div>', className: '', iconSize: [32, 32], iconAnchor: [16, 32], popupAnchor: [0, -32] }),
+      "مركز الحاسوب": L.divIcon({ html: '<div style="background-color: blue; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;"><i class="fas fa-desktop" style="color: white;"></i></div>', className: '', iconSize: [32, 32], iconAnchor: [16, 32], popupAnchor: [0, -32] }),
+      "مكتبة": L.divIcon({ html: '<div style="background-color: orange; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;"><i class="fas fa-book" style="color: white;"></i></div>', className: '', iconSize: [32, 32], iconAnchor: [16, 32], popupAnchor: [0, -32] }),
+      "العيادة الطبية": L.divIcon({ html: '<div style="background-color: green; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;"><i class="fas fa-clinic-medical" style="color: white;"></i></div>', className: '', iconSize: [32, 32], iconAnchor: [16, 32], popupAnchor: [0, -32] }),
+      "ATM": L.divIcon({ html: '<div style="background-color: purple; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;"><i class="fas fa-money-check-alt" style="color: white;"></i></div>', className: '', iconSize: [32, 32], iconAnchor: [16, 32], popupAnchor: [0, -32] }),
+      "بنك فلسطين": L.divIcon({ html: '<div style="background-color: yellow; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;"><i class="fas fa-university" style="color: black;"></i></div>', className: '', iconSize: [32, 32], iconAnchor: [16, 32], popupAnchor: [0, -32] }),
+      "مطبعة": L.divIcon({ html: '<div style="background-color: brown; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;"><i class="fas fa-print" style="color: white;"></i></div>', className: '', iconSize: [32, 32], iconAnchor: [16, 32], popupAnchor: [0, -32] }),
+      "عمادة شؤون الطلب": L.divIcon({ html: '<div style="background-color: pink; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;"><i class="fas fa-users" style="color: white;"></i></div>', className: '', iconSize: [32, 32], iconAnchor: [16, 32], popupAnchor: [0, -32] }),
+      "Parking": L.divIcon({ html: '<div style="background-color: gray; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;"><i class="fas fa-parking" style="color: white;"></i></div>', className: '', iconSize: [32, 32], iconAnchor: [16, 32], popupAnchor: [0, -32] }),
+      "مبنى الرئاسة": L.divIcon({ html: '<div style="background-color: lightblue; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;"><i class="fas fa-user-tie" style="color: black;"></i></div>', className: '', iconSize: [32, 32], iconAnchor: [16, 32], popupAnchor: [0, -32] })
     };
 
     // Custom icon for colleges
     var collegeIcon = L.divIcon({
-      html: '<div style="background-color: pink; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; color: white;"><i class="fas fa-book-open"></i></div>',
+      html: '<div style="background-color: pink; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;"><i class="fas fa-book-open" style="color: white;"></i></div>',
       className: '',
       iconSize: [32, 32],
       iconAnchor: [16, 32],
@@ -267,7 +215,7 @@
 
     // Custom icon for cafes
     var cafeIcon = L.divIcon({
-      html: '<div style="background-color: yellow; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; color: white;"><i class="fas fa-utensils"></i></div>',
+      html: '<div style="background-color: yellow; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;"><i class="fas fa-utensils" style="color: white;"></i></div>',
       className: '',
       iconSize: [32, 32],
       iconAnchor: [16, 32],
@@ -276,7 +224,7 @@
 
     // Custom icon for mosques
     var mosqueIcon = L.divIcon({
-      html: '<div style="background-color: lightgreen; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; color: white;"><i class="fas fa-mosque"></i></div>',
+      html: '<div style="background-color: lightgreen; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;"><i class="fas fa-mosque" style="color: white;"></i></div>',
       className: '',
       iconSize: [32, 32],
       iconAnchor: [16, 32],
@@ -670,6 +618,16 @@
     function toggleSidebar() {
       document.getElementById('sidebar').classList.toggle('collapsed');
     }
+
+    document.getElementById('fullScreenBtn').addEventListener('click', function() {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen();
+      } else {
+        if (document.exitFullscreen) {
+          document.exitFullscreen();
+        }
+      }
+    });
 
     // Ensure the page is served over HTTPS
     if (location.protocol !== 'https:') {
