@@ -135,6 +135,9 @@
       border-radius: 5px;
       line-height: 24px;
       color: #555;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
     }
     .legend h4 {
       margin: 0 0 5px;
@@ -146,6 +149,23 @@
       float: left;
       margin-right: 8px;
       opacity: 0.7;
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      margin-bottom: 5px;
+    }
+    .legend-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      margin-right: 8px;
+    }
+    .legend-text {
+      font-size: 14px;
     }
   </style>
 </head>
@@ -168,10 +188,22 @@
     </div>
     <div class="legend">
       <h4>Legend</h4>
-      <i style="background-color: pink;"></i> Colleges<br>
-      <i style="background-color: yellow;"></i> Cafeterias<br>
-      <i style="background-color: lightgreen;"></i> Mosques<br>
-      <i style="background-color: red;"></i> Services<br>
+      <div class="legend-item">
+        <div class="legend-icon" style="background-color: pink;"><i class="fas fa-book-open" style="color: white;"></i></div>
+        <div class="legend-text">Colleges</div>
+      </div>
+      <div class="legend-item">
+        <div class="legend-icon" style="background-color: yellow;"><i class="fas fa-utensils" style="color: white;"></i></div>
+        <div class="legend-text">Cafeterias</div>
+      </div>
+      <div class="legend-item">
+        <div class="legend-icon" style="background-color: lightgreen;"><i class="fas fa-mosque" style="color: white;"></i></div>
+        <div class="legend-text">Mosques</div>
+      </div>
+      <div class="legend-item">
+        <div class="legend-icon" style="background-color: red;"><i class="fas fa-building" style="color: white;"></i></div>
+        <div class="legend-text">Services</div>
+      </div>
     </div>
   </div>
   <div id="map"></div>
@@ -202,7 +234,7 @@
       attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
     }).addTo(map);
 
-    L.control.scale({ position: 'bottomright' }).addTo(map);
+    L.control.scale({ position: 'bottomright', metric: true, imperial: false }).addTo(map);
 
     var collegeMarkers = {};
     var cafeMarkers = {};
@@ -573,7 +605,7 @@
         var featureLocation = L.latLng(feature.geometry.coordinates[1], feature.geometry.coordinates[0]);
         var featureDistance = distance(userLocation, featureLocation);
 
-         if (featureDistance < closestDistance) {
+        if (featureDistance < closestDistance) {
           closestFeature = feature;
           closestDistance = featureDistance;
         }
