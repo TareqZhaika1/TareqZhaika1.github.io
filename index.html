@@ -11,18 +11,59 @@
       margin: 0;
       height: 100vh;
       width: 100%;
-      position: relative;
+      display: flex;
       font-family: Arial, sans-serif;
     }
-    #map {
+    #sidebar {
+      width: 300px;
+      background-color: #f8f9fa;
+      padding: 15px;
+      border-right: 1px solid #ddd;
+      overflow-y: auto;
+      transition: width 0.3s;
+    }
+    #sidebar.collapsed {
+      width: 50px;
+    }
+    #sidebar h2 {
+      font-size: 20px;
+      margin: 0 0 10px;
+    }
+    #sidebar h3 {
+      font-size: 16px;
+      margin: 10px 0;
+    }
+    #sidebar .category {
+      margin-bottom: 10px;
+    }
+    #sidebar .category ul {
+      list-style: none;
+      padding: 0;
+    }
+    #sidebar .category ul li {
+      margin-bottom: 5px;
+    }
+    #sidebar .toggle-btn {
       position: absolute;
-      width: 100%;
-      top: 0;
-      bottom: 0;
+      top: 10px;
+      right: -25px;
+      background-color: #007bff;
+      color: #fff;
+      padding: 5px 10px;
+      cursor: pointer;
+      border-radius: 3px;
+      transition: right 0.3s;
+    }
+    #sidebar.collapsed .toggle-btn {
+      right: -25px;
+    }
+    #map {
+      flex: 1;
+      position: relative;
     }
     #travelModeContainer {
       position: absolute;
-      top: 50px;
+      top: 20px;
       right: 20px;
       z-index: 1000;
       background: white;
@@ -52,7 +93,7 @@
     }
     #directions {
       position: absolute;
-      top: 130px;
+      top: 100px;
       right: 20px;
       z-index: 1000;
       background-color: rgba(255, 255, 255, 0.9);
@@ -78,64 +119,27 @@
       font-weight: bold;
       margin-bottom: 10px;
     }
-    #collegeSelect, #selectDestination {
-      position: absolute;
-      top: 10px;
-      z-index: 1000;
-      background: white;
-      padding: 5px;
-      border-radius: 8px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    }
-    #collegeSelect {
-      right: 20px;
-    }
-    #selectDestination {
-      right: 200px;
-    }
-    @media (max-width: 768px) {
-      #travelModeContainer {
-        top: 10px;
-        right: 10px;
-        padding: 5px;
-        flex-direction: column;
-      }
-      .travelMode img {
-        width: 24px;
-        height: 24px;
-      }
-      .travelMode span {
-        font-size: 10px;
-      }
-      #directions {
-        top: 80px;
-        right: 10px;
-        width: 90%;
-      }
-      #collegeSelect, #selectDestination {
-        top: 10px;
-        right: 10px;
-        width: calc(50% - 20px);
-        margin-right: 10px;
-      }
-      #selectDestination {
-        right: calc(50% + 10px);
-      }
-    }
   </style>
 </head>
 <body>
+  <div id="sidebar">
+    <div class="toggle-btn" onclick="toggleSidebar()">☰</div>
+    <h2>Categories</h2>
+    <div class="category">
+      <h3>Destinations</h3>
+      <select id="selectDestination">
+        <option value="">Select your Destination</option>
+        <option value="colleges">Colleges</option>
+        <option value="cafes">Cafeterias</option>
+        <option value="mosques">Mosques</option>
+        <option value="services">Services</option>
+      </select>
+      <select id="collegeSelect" style="display: none;">
+        <option value="">Select ID</option>
+      </select>
+    </div>
+  </div>
   <div id="map"></div>
-  <select id="selectDestination">
-    <option value="">Select your Destination</option>
-    <option value="colleges">Colleges</option>
-    <option value="cafes">Cafeterias</option>
-    <option value="mosques">Mosques</option>
-    <option value="services">Services</option>
-  </select>
-  <select id="collegeSelect" style="display: none;">
-    <option value="">Select ID</option>
-  </select>
   <div id="travelModeContainer">
     <div id="walkingMode" class="travelMode" data-mode="walking">
       <img src="https://img.icons8.com/ios-filled/50/000000/walking.png" alt="Walking">
@@ -592,6 +596,10 @@
         stepElement.innerText = `${i + 1}. ${step.text} (${stepDistance})`;
         directionsContainer.appendChild(stepElement);
       });
+    }
+
+    function toggleSidebar() {
+      document.getElementById('sidebar').classList.toggle('collapsed');
     }
 
     // Ensure the page is served over HTTPS
