@@ -19,7 +19,7 @@
     }
     #controlPanel {
       position: absolute;
-      top: 150px; /* Moved further down */
+      top: 120px; /* Adjusted position further down */
       left: 10px;
       z-index: 1000;
       background: rgba(255, 255, 255, 0.9);
@@ -146,10 +146,10 @@
     }
     #logo {
       position: absolute;
-      top: 50px; /* Adjusted position */
-      left: 10px;
+      top: 10px;
+      left: 40px; /* Adjusted position next to zoom buttons */
       z-index: 1000;
-      width: 150px; /* Made the logo bigger */
+      width: 120px; /* Make the logo bigger */
       height: auto;
     }
   </style>
@@ -383,7 +383,7 @@
       } else if (selectedCategory === "services") {
         for (var service in uniqueServices) {
           $('#collegeSelect').append(new Option(service, service));
-        });
+        }
       }
 
       if (!selectedCategory) {
