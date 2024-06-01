@@ -273,6 +273,7 @@
     var mosqueMarkers = {};
     var serviceMarkers = [];
     var collegesData, cafesData, mosquesData, servicesData, uniqueServices;
+    var currentMarker = null; // Store current marker
 
     // Custom icons for different services
     var icons = {
@@ -392,7 +393,6 @@
 
     var selectedFeature = null;
     var routingControl = null; // To keep track of the routing control
-    var selectedMarker = null; // To keep track of the selected marker
     var travelMode = null; // Travel mode is initially null
     var locationWatchId = null; // To keep track of the location watch
 
@@ -448,20 +448,20 @@
         selectedFeature = collegesData.features.find(function(feature) {
           return feature.properties.college_ID == selectedId;
         });
-        selectedMarker = collegeMarkers[selectedId];
-        showMarker(selectedMarker);
+        currentMarker = collegeMarkers[selectedId];
+        showMarker(currentMarker);
       } else if (selectedCategory === "cafes") {
         selectedFeature = cafesData.features.find(function(feature) {
           return feature.properties.Cafe_ID == selectedId;
         });
-        selectedMarker = cafeMarkers[selectedId];
-        showMarker(selectedMarker);
+        currentMarker = cafeMarkers[selectedId];
+        showMarker(currentMarker);
       } else if (selectedCategory === "mosques") {
         selectedFeature = mosquesData.features.find(function(feature) {
           return feature.properties.Mosuqe_loc == selectedId;
         });
-        selectedMarker = mosqueMarkers[selectedId];
-        showMarker(selectedMarker);
+        currentMarker = mosqueMarkers[selectedId];
+        showMarker(currentMarker);
       } else if (selectedCategory === "services") {
         selectedFeature = uniqueServices[selectedId];
         showServiceMarkers(selectedFeature);
@@ -768,10 +768,10 @@
             .addClass('suggestion-item')
             .text(suggestion.label)
             .on('click', function() {
+              if (currentMarker) map.removeLayer(currentMarker); // Remove existing marker
+              currentMarker = L.marker([suggestion.coordinates[1], suggestion.coordinates[0]]).addTo(map);
+              currentMarker.bindPopup(suggestion.label).openPopup();
               map.flyTo([suggestion.coordinates[1], suggestion.coordinates[0]], 18);
-              if (selectedMarker) map.removeLayer(selectedMarker);
-              selectedMarker = L.marker([suggestion.coordinates[1], suggestion.coordinates[0]]).addTo(map);
-              selectedMarker.bindPopup(suggestion.label).openPopup();
               suggestionsContainer.hide();
               $('#searchInput').val(suggestion.label); // Synchronize with search input
 
@@ -786,6 +786,7 @@
               };
               $('#selectDestination').val(categoryMap[prefix]);
               $('#collegeSelect').val(id);
+              $('#collegeSelect').show(); // Ensure secondary dropdown is visible
             });
           suggestionsContainer.append(suggestionItem);
         });
