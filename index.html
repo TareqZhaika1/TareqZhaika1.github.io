@@ -41,7 +41,7 @@
       border-radius: 5px;
       line-height: 18px;
       color: #555;
-      background: rgba(255, 255, 255, 0.8);
+      background: rgba(255, 255, 255, 0.9);
       margin-bottom: 10px;
     }
     .legend h4 {
@@ -146,10 +146,10 @@
     }
     #logo {
       position: absolute;
-      top: 10px;
-      left: 40px; /* Adjusted position next to zoom buttons */
+      top: 50px; /* Adjusted position */
+      left: 10px;
       z-index: 1000;
-      width: 120px; /* Make the logo bigger */
+      width: 150px; /* Made the logo bigger */
       height: auto;
     }
   </style>
@@ -383,7 +383,7 @@
       } else if (selectedCategory === "services") {
         for (var service in uniqueServices) {
           $('#collegeSelect').append(new Option(service, service));
-        }
+        });
       }
 
       if (!selectedCategory) {
