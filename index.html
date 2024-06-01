@@ -28,28 +28,27 @@
       border-radius: 8px;
       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
       width: 300px;
+      display: flex;
+      flex-direction: column;
     }
     #searchInput {
       width: 100%;
-      padding: 5px;
+      padding: 10px;
       border: 1px solid #ccc;
       border-radius: 4px;
+      font-size: 16px;
     }
     #suggestions {
-      position: absolute;
-      top: 40px;
-      left: 0;
-      right: 0;
-      z-index: 1000;
-      background: rgba(255, 255, 255, 0.9);
+      margin-top: 5px;
       border: 1px solid #ccc;
       border-radius: 4px;
+      background: white;
       max-height: 150px;
       overflow-y: auto;
       display: none;
     }
     .suggestion-item {
-      padding: 5px;
+      padding: 10px;
       cursor: pointer;
     }
     .suggestion-item:hover {
@@ -770,12 +769,23 @@
             .text(suggestion.label)
             .on('click', function() {
               map.flyTo([suggestion.coordinates[1], suggestion.coordinates[0]], 18);
-              const marker = L.marker([suggestion.coordinates[1], suggestion.coordinates[0]]).addTo(map);
-              marker.bindPopup(suggestion.label).openPopup();
+              if (selectedMarker) map.removeLayer(selectedMarker);
+              selectedMarker = L.marker([suggestion.coordinates[1], suggestion.coordinates[0]]).addTo(map);
+              selectedMarker.bindPopup(suggestion.label).openPopup();
               suggestionsContainer.hide();
               $('#searchInput').val(suggestion.label); // Synchronize with search input
-              $('#selectDestination').val(''); // Clear dropdown selection
-              $('#collegeSelect').hide(); // Hide secondary dropdown
+
+              // Update dropdown selections
+              let [prefix, id] = suggestion.label.split(': ');
+              prefix = prefix.toLowerCase();
+              const categoryMap = {
+                'college': 'colleges',
+                'cafeteria': 'cafes',
+                'mosque': 'mosques',
+                'service': 'services'
+              };
+              $('#selectDestination').val(categoryMap[prefix]);
+              $('#collegeSelect').val(id);
             });
           suggestionsContainer.append(suggestionItem);
         });
