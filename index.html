@@ -440,6 +440,7 @@
       if (!selectedId) return;
 
       var selectedCategory = $('#selectDestination').val();
+      $('#searchInput').val($(this).find('option:selected').text()); // Synchronize with search input
 
       // Clear previous marker and routing if any
       clearMap();
@@ -772,7 +773,9 @@
               const marker = L.marker([suggestion.coordinates[1], suggestion.coordinates[0]]).addTo(map);
               marker.bindPopup(suggestion.label).openPopup();
               suggestionsContainer.hide();
-              $('#searchInput').val('');
+              $('#searchInput').val(suggestion.label); // Synchronize with search input
+              $('#selectDestination').val(''); // Clear dropdown selection
+              $('#collegeSelect').hide(); // Hide secondary dropdown
             });
           suggestionsContainer.append(suggestionItem);
         });
