@@ -19,13 +19,20 @@
     }
     #controlPanel {
       position: absolute;
-      top: 60px; /* Adjusted position */
+      top: 150px; /* Moved further down */
       left: 10px;
       z-index: 1000;
       background: rgba(255, 255, 255, 0.9);
       padding: 10px;
       border-radius: 8px;
       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    #controlPanel h2 {
+      font-size: 16px;
+      margin-bottom: 10px;
+    }
+    #controlPanel select {
+      margin-bottom: 10px;
     }
     .legend {
       padding: 6px 8px;
@@ -34,7 +41,7 @@
       border-radius: 5px;
       line-height: 18px;
       color: #555;
-      background: rgba(255, 255, 255, 0.8);
+      background: rgba(255, 255, 255, 0.9); /* Updated transparency */
       margin-bottom: 10px;
     }
     .legend h4 {
@@ -84,9 +91,9 @@
     #travelModeContainer {
       position: absolute;
       top: 10px; /* Adjusted position */
-      left: 10px;
+      right: 110px; /* Adjusted position */
       z-index: 1000;
-      background: rgba(255, 255, 255, 0.9);
+      background: white;
       padding: 10px;
       border-radius: 8px;
       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
@@ -113,7 +120,7 @@
     }
     #directions {
       position: absolute;
-      top: 60px; /* Adjusted position */
+      top: 160px; /* Adjusted position */
       right: 10px;
       z-index: 1000;
       background-color: rgba(255, 255, 255, 0.9);
@@ -140,104 +147,107 @@
     #logo {
       position: absolute;
       top: 10px;
-      left: 60px; /* Adjusted position next to zoom buttons */
+      left: 40px; /* Adjusted position next to zoom buttons */
       z-index: 1000;
-      width: 100px; /* Adjusted size */
+      width: 120px; /* Make the logo bigger */
       height: auto;
     }
-    .dropdown-bar {
-      display: flex;
+    #categoryBar {
       position: absolute;
-      top: 10px;
-      left: 160px;
+      top: 50px;
+      left: 50%;
+      transform: translateX(-50%);
       z-index: 1000;
       background: rgba(255, 255, 255, 0.9);
+      padding: 10px;
       border-radius: 8px;
       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      display: flex;
+      gap: 10px;
     }
-    .dropdown-bar .dropdown-item {
+    .categoryItem {
       display: flex;
       flex-direction: column;
       align-items: center;
       cursor: pointer;
-      padding: 10px;
+      padding: 5px;
     }
-    .dropdown-bar .dropdown-item img {
-      width: 24px;
-      height: 24px;
+    .categoryItem img {
+      width: 32px;
+      height: 32px;
     }
     .dropdown-content {
       display: none;
       position: absolute;
-      background: rgba(255, 255, 255, 0.9);
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-      z-index: 1000;
       top: 50px;
+      background: white;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
       border-radius: 8px;
       padding: 10px;
-    }
-    .dropdown-item:hover .dropdown-content {
-      display: block;
+      z-index: 1001;
     }
     .dropdown-content select {
-      width: 150px;
+      margin-bottom: 10px;
     }
   </style>
 </head>
 <body>
   <div id="map"></div>
   <img id="logo" src="https://github.com/TareqZhaika1/TareqZhaika1.github.io/blob/main/bzu-footer-logo.png?raw=true" alt="BZU Logo">
-  <div id="controlPanel" class="legend">
-    <h4>Legend</h4>
-    <div class="legend-item">
-      <div class="legend-icon" style="background-color: pink;"><i class="fas fa-book-open"></i></div>
-      <div class="legend-text">Colleges</div>
-    </div>
-    <div class="legend-item">
-      <div class="legend-icon" style="background-color: yellow;"><i class="fas fa-utensils"></i></div>
-      <div class="legend-text">Cafeterias</div>
-    </div>
-    <div class="legend-item">
-      <div class="legend-icon" style="background-color: lightgreen;"><i class="fas fa-mosque"></i></div>
-      <div class="legend-text">Mosques</div>
-    </div>
-    <div class="legend-item">
-      <div class="legend-icon" style="background-color: red;"><i class="fas fa-building"></i></div>
-      <div class="legend-text">Services</div>
+  <div id="controlPanel">
+    <h2>Categories</h2>
+    <div class="legend">
+      <h4>Legend</h4>
+      <div class="legend-item">
+        <div class="legend-icon" style="background-color: pink;"><i class="fas fa-book-open"></i></div>
+        <div class="legend-text">Colleges</div>
+      </div>
+      <div class="legend-item">
+        <div class="legend-icon" style="background-color: yellow;"><i class="fas fa-utensils"></i></div>
+        <div class="legend-text">Cafeterias</div>
+      </div>
+      <div class="legend-item">
+        <div class="legend-icon" style="background-color: lightgreen;"><i class="fas fa-mosque"></i></div>
+        <div class="legend-text">Mosques</div>
+      </div>
+      <div class="legend-item">
+        <div class="legend-icon" style="background-color: red;"><i class="fas fa-building"></i></div>
+        <div class="legend-text">Services</div>
+      </div>
     </div>
   </div>
-  <div class="dropdown-bar">
-    <div class="dropdown-item">
+  <div id="categoryBar">
+    <div class="categoryItem" id="collegesItem">
       <img src="https://img.icons8.com/ios-filled/50/000000/book.png" alt="Colleges">
       <span>Colleges</span>
-      <div class="dropdown-content">
+      <div class="dropdown-content" id="collegesDropdown">
         <select id="collegeSelect">
           <option value="">Select College</option>
         </select>
       </div>
     </div>
-    <div class="dropdown-item">
-      <img src="https://img.icons8.com/ios-filled/50/000000/restaurant.png" alt="Cafeterias">
+    <div class="categoryItem" id="cafesItem">
+      <img src="https://img.icons8.com/ios-filled/50/000000/utensils.png" alt="Cafeterias">
       <span>Cafeterias</span>
-      <div class="dropdown-content">
+      <div class="dropdown-content" id="cafesDropdown">
         <select id="cafeSelect">
-          <option value="">Select Cafeteria</option>
+          <option value="">Select Cafe</option>
         </select>
       </div>
     </div>
-    <div class="dropdown-item">
+    <div class="categoryItem" id="mosquesItem">
       <img src="https://img.icons8.com/ios-filled/50/000000/mosque.png" alt="Mosques">
       <span>Mosques</span>
-      <div class="dropdown-content">
+      <div class="dropdown-content" id="mosquesDropdown">
         <select id="mosqueSelect">
           <option value="">Select Mosque</option>
         </select>
       </div>
     </div>
-    <div class="dropdown-item">
-      <img src="https://img.icons8.com/ios-filled/50/000000/services.png" alt="Services">
+    <div class="categoryItem" id="servicesItem">
+      <img src="https://img.icons8.com/ios-filled/50/000000/building.png" alt="Services">
       <span>Services</span>
-      <div class="dropdown-content">
+      <div class="dropdown-content" id="servicesDropdown">
         <select id="serviceSelect">
           <option value="">Select Service</option>
         </select>
@@ -419,6 +429,37 @@
       }
     });
 
+    $('.categoryItem').click(function() {
+      $(this).find('.dropdown-content').toggle();
+    });
+
+    function populateSelectOptions(data, selectElement, property) {
+      data.features.forEach(function(feature) {
+        selectElement.append(new Option(feature.properties[property], feature.properties[property]));
+      });
+    }
+
+    $.when(
+      $.getJSON("colleges_edit.json", function(Colleges) {
+        collegesData = Colleges;
+        populateSelectOptions(Colleges, $('#collegeSelect'), 'college_ID');
+      }),
+      $.getJSON("caf.json", function(Cafes) {
+        cafesData = Cafes;
+        populateSelectOptions(Cafes, $('#cafeSelect'), 'Cafe_ID');
+      }),
+      $.getJSON("mosques.json", function(Mosques) {
+        mosquesData = Mosques;
+        populateSelectOptions(Mosques, $('#mosqueSelect'), 'Mosuqe_loc');
+      }),
+      $.getJSON("Services.json", function(Services) {
+        servicesData = Services;
+        populateSelectOptions(Services, $('#serviceSelect'), 'Services');
+      })
+    ).fail(function(jqxhr, textStatus, error) {
+      console.error("Error loading JSON data: ", textStatus, error);
+    });
+
     $('#collegeSelect').change(function() {
       var selectedId = $(this).val();
       if (!selectedId) return;
@@ -483,8 +524,11 @@
       clearMap();
 
       if (selectedCategory === "services") {
-        selectedFeature = uniqueServices[selectedId];
-        showServiceMarkers(selectedFeature);
+        selectedFeature = servicesData.features.find(function(feature) {
+          return feature.properties.Services == selectedId;
+        });
+        selectedMarker = serviceMarkers[selectedId];
+        showMarker(selectedMarker);
       }
     });
 
